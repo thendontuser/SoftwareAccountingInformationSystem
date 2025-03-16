@@ -1,5 +1,5 @@
 from django.db import models
-
+from 
 class Software(models.Model):
     '''
         Определяет модель таблицы Software в базе данных
