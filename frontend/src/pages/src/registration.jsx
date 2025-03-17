@@ -39,7 +39,7 @@ const RegPage = () => {
                         <input
                             type="text"
                             id="middlename"
-                            value={lastname}
+                            value={middlename}
                             onChange={(e) => setMiddlename(e.target.value)}
                             required
                     />
