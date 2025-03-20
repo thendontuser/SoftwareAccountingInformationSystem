@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.hashers import make_password, check_password
 
 class Software(models.Model):
     '''
@@ -46,8 +47,20 @@ class User(models.Model):
     middlename = models.CharField(max_length=64)
     role_name = models.CharField(max_length=5)
     login = models.CharField(max_length=64)
-    password_hash = models.CharField(max_length=256)
+    password_hash = models.CharField(max_length=512)
 
+    def set_password(self, password):
+        """
+            Хеширует пароль и сохраняет его
+        """
+        self.password_hash = make_password(password)
+
+    def check_password(self, password):
+        """
+            Проверяет пароль на соответствие хешу
+        """
+        return check_password(password)
+        
 
 class Request(models.Model):
     '''
