@@ -20,5 +20,6 @@ from software_accounting.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('reg/', UserAPIView.as_view(), name="register"),
     path('software/', SoftwareAPIView.as_view(), name="something")
 ]

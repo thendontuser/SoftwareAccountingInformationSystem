@@ -1,4 +1,4 @@
-from rest_framework import serializers
+from rest_framework import serializers, generics
 from software_accounting.models import *
 
 class SoftwareSerializer(serializers.ModelSerializer):
@@ -17,8 +17,15 @@ class DeviceSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    model = User
-    fields = ['id', 'surname', 'name', 'middlename', 'role_name', 'login', 'password_hash']
+    class Meta:
+        model = User
+        fields = ['surname', 'name', 'middlename', 'role_name', 'login', 'password_hash']
+    
+    def create(self, validated_data) -> User:
+        user = User(**validated_data)
+        user.set_password(validated_data['password_hash'])
+        user.save()
+        return user
 
 
 class RequestSerializer(serializers.ModelSerializer):
