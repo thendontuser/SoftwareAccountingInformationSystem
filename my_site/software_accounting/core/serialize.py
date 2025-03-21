@@ -1,4 +1,4 @@
-from rest_framework import serializers, generics
+from rest_framework import serializers
 from software_accounting.models import *
 
 class SoftwareSerializer(serializers.ModelSerializer):
@@ -26,6 +26,13 @@ class UserSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password_hash'])
         user.save()
         return user
+    
+    def user_is_exists(self, validated_data) -> bool:
+        users = User.objects.all()
+        for user in users:
+            if (user.login == validated_data['login']):
+                return True
+        return False
 
 
 class RequestSerializer(serializers.ModelSerializer):

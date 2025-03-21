@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import '../styles/login.css'; 
 
@@ -8,6 +8,7 @@ const RegPage = () => {
     const [middlename, setMiddlename] = useState('');
     const [role, setRole] = useState('');
     const [login, setLogin] = useState('');
+    const [loginError, setLoginError] = useState('');
     const [password, setPassword] = useState('');
 
     const handleSubmit = (e) => {
@@ -22,7 +23,11 @@ const RegPage = () => {
                 "password_hash": password
             }
             axios.post('http://127.0.0.1:8000/reg/', data).then(response => {
-                console.log('Success:', response.data);
+                if (response.data === 'userIsExists') {
+                    setLoginError('Логин занят');
+                } else {
+                    
+                }
             });
         } catch(error) {
             console.error('Ошибка при регистрации:', error.response.data);
@@ -79,8 +84,10 @@ const RegPage = () => {
                         type="login"
                         id="login"
                         value={login}
-                        onChange={(e) => setLogin(e.target.value)}
+                        onChange={(e) => {setLogin(e.target.value); setLoginError('')}}
+                        placeholder={loginError.valueOf()}
                         required
+                        style={{ borderColor: loginError ? 'red' : '', color: loginError ? 'red' : '' }}
                     />
                 </div>
 

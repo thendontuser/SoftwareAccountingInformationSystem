@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from software_accounting.models import *
 from rest_framework.response import Response
 from software_accounting.core.serialize import *
+from django.forms.forms import ValidationError
 
 
 class SoftwareAPIView(APIView):
@@ -54,8 +55,11 @@ class UserAPIView(APIView):
     def post(self, request) -> Response | None:
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            return  Response(serializer.data)
+            if serializer.user_is_exists(request.data) == False:
+                serializer.save()
+            else:
+                return Response('userIsExists')
+            return Response(serializer.data)
         
 
 class RequestAPIView(APIView):
@@ -63,7 +67,7 @@ class RequestAPIView(APIView):
         datail = [ {'id_software' : datail.id_software, 'id_user' : datail.id_user} for datail in Request.objects.all() ]
         return Response(datail)
     
-    def post(self, request) -> Response | None:
+    def post(self, request) -> Response | None | ValidationError:
         serializer = RequestSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
