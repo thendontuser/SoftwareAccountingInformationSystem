@@ -27,11 +27,27 @@ class UserSerializer(serializers.ModelSerializer):
         user.save()
         return user
     
-    def user_is_exists(self, validated_data) -> bool:
-        users = User.objects.all()
-        for user in users:
-            if (user.login == validated_data['login']):
-                return True
+    def is_login_busy(self, validated_data) -> bool:
+        try:
+            user = User.objects.get(login=validated_data['login'])
+            return True
+        except User.DoesNotExist:
+            return False
+        
+    
+    def user_is_exists(self, validated_data) -> bool | dict:
+        try:
+            user = User.objects.get(login=validated_data['login'])
+            if (user.check_password(validated_data['password_hash'])):
+                return {
+                    'surname' : user.surname, 
+                    'name' : user.name, 
+                    'middlename' : user.middlename, 
+                    'role_name' : user.role_name, 
+                    'login' : user.login
+                }
+        except User.DoesNotExist:
+            return False
         return False
 
 

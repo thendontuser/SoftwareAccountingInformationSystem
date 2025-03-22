@@ -26,7 +26,8 @@ const RegPage = () => {
                 if (response.data === 'userIsExists') {
                     setLoginError('Логин занят');
                 } else {
-                    
+                    setLoginError('');
+                    console.log('зареган');
                 }
             });
         } catch(error) {
@@ -37,6 +38,7 @@ const RegPage = () => {
     return (
         <div className="login-container">
             <h2> Регистрация </h2>
+            {loginError && <p style={{ color: 'red', textAlign: 'center' }}>{loginError}</p>}
             <form onSubmit={handleSubmit}>
                 <div className="select-group">
                     <label htmlFor="rolename"> Роль </label>

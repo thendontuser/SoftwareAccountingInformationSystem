@@ -59,7 +59,7 @@ class User(models.Model):
         """
             Проверяет пароль на соответствие хешу
         """
-        return check_password(password)
+        return check_password(password, self.password_hash)
         
 
 class Request(models.Model):

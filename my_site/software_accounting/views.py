@@ -45,7 +45,7 @@ class DeviceAPIView(APIView):
             return  Response(serializer.data)
         
 
-class UserAPIView(APIView):
+class UserRegistrationAPIView(APIView):
     def get(self, request) -> Response:
         datail = [ {'surname' : datail.surname, 'name' : datail.name, 'middlename' : datail.middlename, 'role_name' : datail.role_name, 
                     'login' : datail.login, 'password_hash' : datail.password_hash} 
@@ -55,13 +55,24 @@ class UserAPIView(APIView):
     def post(self, request) -> Response | None:
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            if serializer.user_is_exists(request.data) == False:
+            if serializer.is_login_busy(request.data) == False:
                 serializer.save()
             else:
                 return Response('userIsExists')
             return Response(serializer.data)
         
 
+class UserLoginAPIView(APIView):
+    def get(self, request) -> Response:
+        userReg = UserRegistrationAPIView()
+        return userReg.get(request=request)
+    
+    def post(self, request) -> Response:
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            return Response(serializer.user_is_exists(request.data))
+            
+        
 class RequestAPIView(APIView):
     def get(self, request) -> Response:
         datail = [ {'id_software' : datail.id_software, 'id_user' : datail.id_user} for datail in Request.objects.all() ]
