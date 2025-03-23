@@ -7,6 +7,7 @@ const RegPage = () => {
     const [name, setName] = useState('');
     const [middlename, setMiddlename] = useState('');
     const [role, setRole] = useState('');
+    const [email, setEmail] = useState('');
     const [login, setLogin] = useState('');
     const [loginError, setLoginError] = useState('');
     const [password, setPassword] = useState('');
@@ -19,6 +20,7 @@ const RegPage = () => {
                 "name": name,
                 "middlename": middlename,
                 "role_name": role,
+                "email": email,
                 "login": login,
                 "password_hash": password
             }
@@ -78,6 +80,15 @@ const RegPage = () => {
                         id="middlename"
                         value={middlename}
                         onChange={(e) => setMiddlename(e.target.value)}
+                        required
+                    />
+
+                    <label htmlFor="email"> Email </label>
+                    <input
+                        type="email"
+                        id="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
                         required
                     />
                     

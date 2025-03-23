@@ -7,7 +7,7 @@ function App() {
     <div className="Login">
       <Router>
         <Routes>
-          <Route path='/login' element={<LoginPage />} />
+          <Route path='/' element={<LoginPage />} />
           <Route path='/reg' element={<RegPage />} />
         </Routes>
       </Router>

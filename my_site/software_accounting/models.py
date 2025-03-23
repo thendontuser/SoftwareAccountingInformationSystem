@@ -35,6 +35,16 @@ class Device(models.Model):
     os_name = models.CharField(max_length=64)
     ip_address = models.CharField(max_length=16)
     ram_value = models.IntegerField()
+    number_of_department = models.ForeignKey('Department', on_delete=models.PROTECT)
+
+
+class Department(models.Model):
+    '''
+        Определяет модель таблицы Department в базе данных
+    '''
+
+    number = models.IntegerField(unique=True)
+    name = models.CharField(max_length=64)
 
 
 class User(models.Model):
@@ -46,6 +56,7 @@ class User(models.Model):
     name = models.CharField(max_length=64)
     middlename = models.CharField(max_length=64)
     role_name = models.CharField(max_length=5)
+    email = models.CharField(max_length=64)
     login = models.CharField(max_length=64)
     password_hash = models.CharField(max_length=512)
 

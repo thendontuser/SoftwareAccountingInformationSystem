@@ -19,7 +19,7 @@ class DeviceSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['surname', 'name', 'middlename', 'role_name', 'login', 'password_hash']
+        fields = ['surname', 'name', 'middlename', 'email', 'role_name', 'login', 'password_hash']
     
     def create(self, validated_data) -> User:
         user = User(**validated_data)
@@ -42,7 +42,8 @@ class UserSerializer(serializers.ModelSerializer):
                 return {
                     'surname' : user.surname, 
                     'name' : user.name, 
-                    'middlename' : user.middlename, 
+                    'middlename' : user.middlename,
+                    'email' : user.email,
                     'role_name' : user.role_name, 
                     'login' : user.login
                 }

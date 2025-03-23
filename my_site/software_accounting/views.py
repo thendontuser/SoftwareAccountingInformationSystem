@@ -48,7 +48,7 @@ class DeviceAPIView(APIView):
 class UserRegistrationAPIView(APIView):
     def get(self, request) -> Response:
         datail = [ {'surname' : datail.surname, 'name' : datail.name, 'middlename' : datail.middlename, 'role_name' : datail.role_name, 
-                    'login' : datail.login, 'password_hash' : datail.password_hash} 
+                    'email' : datail.email, 'login' : datail.login, 'password_hash' : datail.password_hash} 
                     for datail in User.objects.all() ]
         return Response(datail)
     

@@ -17,6 +17,7 @@ const LoginPage = () => {
                 "name" : 'none',
                 "middlename" : 'none',
                 "role_name" : 'none',
+                "email" : 'none',
                 "login" : login,
                 "password_hash" : password
             }
