@@ -57,6 +57,7 @@ class User(models.Model):
     middlename = models.CharField(max_length=64)
     role_name = models.CharField(max_length=5)
     email = models.CharField(max_length=64)
+    department_number = models.ForeignKey('Department', to_field='number', on_delete=models.PROTECT)
     login = models.CharField(max_length=64)
     password_hash = models.CharField(max_length=512)
 

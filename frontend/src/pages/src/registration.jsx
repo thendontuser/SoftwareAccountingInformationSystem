@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import '../styles/login.css'; 
 
@@ -8,6 +8,10 @@ const RegPage = () => {
     const [middlename, setMiddlename] = useState('');
     const [role, setRole] = useState('');
     const [email, setEmail] = useState('');
+
+    const [departments, setDepartments] = useState([]);
+    const [selectedDepartment, setSelectedDepartment] = useState('');
+
     const [login, setLogin] = useState('');
     const [loginError, setLoginError] = useState('');
     const [password, setPassword] = useState('');
@@ -20,6 +24,7 @@ const RegPage = () => {
                 "name": name,
                 "middlename": middlename,
                 "role_name": role,
+                "department_number": selectedDepartment,
                 "email": email,
                 "login": login,
                 "password_hash": password
@@ -37,6 +42,23 @@ const RegPage = () => {
         }
     };
 
+    useEffect(() => {
+        const getDepartments = async () => {
+            try {
+                const response = await axios.get('http://127.0.0.1:8000/departments/');
+                setDepartments(response.data);
+            } catch (error) {
+                console.error('Ошибка при получении отделов:', error);
+            }
+        }; 
+
+        getDepartments();
+    }, [])
+
+    const handleDepartmentChange = (event) => {
+        setSelectedDepartment(event.target.value);
+    };
+
     return (
         <div className="login-container">
             <h2> Регистрация </h2>
@@ -52,6 +74,16 @@ const RegPage = () => {
                             required>
                                 <option value="user">Обычный пользователь</option>
                                 <option value="admin">Администратор</option>
+                        </select>
+
+                    <label htmlFor="department"> Отдел </label>
+                        <select 
+                            id="department" 
+                            value={selectedDepartment}
+                            onChange={(e) => handleDepartmentChange(e)}
+                            required>
+                                {departments.map(department => (
+                                    <option value={department['number']}> {department['name']} </option>))}
                         </select>
                 </div>
 

@@ -45,11 +45,23 @@ class DeviceAPIView(APIView):
             return  Response(serializer.data)
         
 
+class DepartmentAPIView(APIView):
+    def get(self, request) -> Response:
+        datail = [ {'number' : datail.number, 'name' : datail.name} for datail in Department.objects.all() ]
+        return Response(datail)
+    
+    def post(self, request) -> Response | None:
+        serializer = DepartmentSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return  Response(serializer.data)
+        
+
 class UserRegistrationAPIView(APIView):
     def get(self, request) -> Response:
         datail = [ {'surname' : datail.surname, 'name' : datail.name, 'middlename' : datail.middlename, 'role_name' : datail.role_name, 
-                    'email' : datail.email, 'login' : datail.login, 'password_hash' : datail.password_hash} 
-                    for datail in User.objects.all() ]
+                    'email' : datail.email, 'department_number' : datail.department_number,  'login' : datail.login,
+                      'password_hash' : datail.password_hash} for datail in User.objects.all() ]
         return Response(datail)
     
     def post(self, request) -> Response | None:

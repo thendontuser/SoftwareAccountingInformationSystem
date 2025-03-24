@@ -22,5 +22,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('login/', UserLoginAPIView.as_view(), name="login"),
     path('reg/', UserRegistrationAPIView.as_view(), name="register"),
-    path('software/', SoftwareAPIView.as_view(), name="something")
+    path('software/', SoftwareAPIView.as_view(), name="softwares"),
+    path('departments/', DepartmentAPIView.as_view(), name='departments')
 ]
