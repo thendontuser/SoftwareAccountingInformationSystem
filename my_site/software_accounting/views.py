@@ -60,7 +60,7 @@ class DepartmentAPIView(APIView):
 class UserRegistrationAPIView(APIView):
     def get(self, request) -> Response:
         datail = [ {'surname' : datail.surname, 'name' : datail.name, 'middlename' : datail.middlename, 'role_name' : datail.role_name, 
-                    'email' : datail.email, 'department_number' : datail.department_number,  'login' : datail.login,
+                    'email' : datail.email, 'department_number' : datail.department_number.id,  'login' : datail.login,
                       'password_hash' : datail.password_hash} for datail in User.objects.all() ]
         return Response(datail)
     
