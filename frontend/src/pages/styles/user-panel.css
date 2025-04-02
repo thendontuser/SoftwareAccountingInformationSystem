@@ -10,7 +10,7 @@ body {
 }
 
 .dashboard-container {
-    max-width: 800px;
+    max-width: 1000px;
     margin: auto;
     padding: 20px;
     background-color: #fff;
@@ -28,8 +28,12 @@ body {
     border-radius: 8px 8px 0 0;
 }
 
-.user-name {
-    font-weight: bold;
+.dashboard-header-user {
+    text-align: center;
+}
+
+.dashboard-container h3{
+    font-weight: bold;  
 }
 
 .dashboard-main {
@@ -50,7 +54,9 @@ body {
     margin-right: 0; /* Убираем отступ у последнего блока */
 }
 
-input {
+input,
+select,
+textarea {
     width: calc(100% - 10px); /* Учитываем отступы */
     padding: 10px;
     margin-bottom: 10px; /* Отступ между полями */

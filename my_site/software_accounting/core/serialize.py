@@ -23,6 +23,13 @@ class DepartmentSerializer(serializers.ModelSerializer):
         model = Department
         fields = ['number', 'name']
 
+    def get_name(self, data) -> str:
+        try:
+            department = Department.objects.get(number=data['number'])
+            return department.name
+        except Department.DoesNotExist:
+            return 'None'
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User

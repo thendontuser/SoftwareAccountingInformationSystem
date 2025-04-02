@@ -52,9 +52,9 @@ class DepartmentAPIView(APIView):
     
     def post(self, request) -> Response | None:
         serializer = DepartmentSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            return  Response(serializer.data)
+        #if serializer.is_valid(raise_exception=True):
+        #serializer.save()
+        return Response(serializer.get_name(request.data))
         
 
 class UserRegistrationAPIView(APIView):
