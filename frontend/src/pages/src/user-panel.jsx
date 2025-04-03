@@ -1,19 +1,87 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import '../styles/user-panel.css';
 
 const UserPage = () => {
+    const [softwareId, setSoftwareId] = useState(0);
     const [softwareName, setSoftwareName] = useState('');
+    const [softwareVersion, setSoftwareVersion] = useState('');
+    const [softwareLicense, setSoftwareLicense] = useState('');
+    const [softwareLicenseBegin, setSoftwareLicenseBegin] = useState(new Date);
+    const [softwareLicenseEnd, setSoftwareLicenseEnd] = useState(new Date);
     const [deviceNumber, setDeviceNumber] = useState('');
-    const [developer, setDeveloper] = useState('');
+    const [developerId, setDeveloperId] = useState(0);
+    const [deviceName, setDeviceName] = useState('');
+    const [developerName, setDeveloperName] = useState('');
+
+    const [softwares, setSoftwares] = useState([]);
+    const [devices, setDevices] = useState([]);
 
     const [userData, setUserData] = useState(null);
 
+    // получение данных пользователя
     useEffect(() => {
         const storedUserData = localStorage.getItem("user_info");
         if (storedUserData) {
             setUserData(JSON.parse(storedUserData));
         }
     }, []);
+
+    // получение списка ПО
+    useEffect(() => {
+        const getSoftwares = async () => {
+            try {
+                const response = await axios.get('http://127.0.0.1:8000/software/');
+                setSoftwares(response.data);
+            } catch (error) {
+                console.error('Ошибка при получении списка ПО:', error);
+            }
+        }; 
+
+        getSoftwares();
+    }, []);
+
+    // получение списка компьютеров
+    useEffect(() => {
+        const getDevices = async () => {
+            try {
+                const response = await axios.get('http://127.0.0.1:8000/devices');
+                setDevices(response.data);
+            } catch (error) {
+                console.error('Ошибка при получении списка ПО:', error);
+            }
+        }; 
+
+        getDevices();
+    }, []);
+
+    const handleSoftwareChange = (value) => {
+        softwares.forEach(software => {
+            if (software.id === value) {
+                setSoftwareName(software.name);
+                setSoftwareVersion(software.version);
+                setSoftwareLicense(software.license);
+                setSoftwareLicenseBegin(software.license_begin);
+                setSoftwareLicenseEnd(software.license_end);
+                setDeveloperId(software.id_developer);
+                
+                try {
+                    const response = axios.get('http://127.0.0.1:8000/developers/');
+                    response.data.forEach(developer => {
+                        if (developer.id === developerId) {
+                            setDeveloperName(developer.name);
+                        }
+                    });
+                } catch (error) {
+                    console.error('Ошибка при получении списка разработчиков:', error);
+                }
+            }
+        });
+    };
+
+    const handleDeviceChange = (value) => {
+        setDeviceName(value);
+    };
 
     const [softwareDetails, setSoftwareDetails] = useState({
         name: softwareName,
@@ -22,18 +90,10 @@ const UserPage = () => {
         startDate: '',
         endDate: '',
         computerNumber: deviceNumber,
-        developer: developer,
+        developer: developerId,
         logoPath: ''
     });
     const [report, setReport] = useState(null);
-
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setSoftwareDetails({
-            ...softwareDetails,
-            [name]: value
-        });
-    };
 
     const handleSubmitRequest = (e) => {
         e.preventDefault();
@@ -45,7 +105,7 @@ const UserPage = () => {
             startDate: '',
             endDate: '',
             computerNumber: deviceNumber,
-            developer: developer,
+            developer: developerId,
             logoPath: ''
         });
     };
@@ -71,65 +131,63 @@ const UserPage = () => {
                             <select 
                                 id="software" 
                                 value={softwareName}
-                                onChange={(e) => setSoftwareName(e.target.value)}
+                                onChange={(e) => handleSoftwareChange(e.target.value)}
                                 required>
-                                    <option value="1">Visual Studio 2022 Comunity</option>
-                                    <option value="2">Sublime Text 3</option>
+                                    {softwares.map(software => (
+                                    <option value={software['id']}> {software['name']} </option>))}
                             </select>
                             <select 
                                 id="device"
-                                value={deviceNumber}
-                                onChange={(e) => setDeviceNumber(e.target.value)}
+                                value={deviceName}
+                                onChange={(e) => handleDeviceChange(e.target.value)}
                                 required>
-                                    <option value="1">ASUS 3000</option>
-                                    <option value="2">HP 7500</option>
+                                    {devices.map(device => (
+                                    <option value={device['id']}> {device['name']} </option>))}
                             </select>
 
                             <input
                                 type="text"
                                 name="version"
-                                value={softwareDetails.version}
-                                onChange={handleInputChange}
+                                value={softwareLicense}
                                 placeholder="Версия"
+                                readOnly
                                 required
                             />
                             <input
                                 type="text"
                                 name="license"
-                                value={softwareDetails.license}
-                                onChange={handleInputChange}
+                                value={softwareLicense}
                                 placeholder="Лицензия"
+                                readOnly
                                 required
                             />
                             <input
                                 type="date"
                                 name="startDate"
-                                value={softwareDetails.startDate}
-                                onChange={handleInputChange}
+                                value={softwareLicenseBegin}
                                 placeholder="Дата начала лицензии"
+                                readOnly
                                 required
                             />
                             <input
                                 type="date"
                                 name="endDate"
-                                value={softwareDetails.endDate}
-                                onChange={handleInputChange}
+                                value={softwareLicenseEnd}
                                 placeholder="Дата окончания лицензии"
+                                readOnly
                                 required
                             />
                             <input
                                 type="text"
                                 name="developer"
-                                value={softwareDetails.developer}
-                                onChange={handleInputChange}
+                                value={developerName}
                                 placeholder="Разработчик"
                                 readOnly
                             />
                             <input
                                 type="text"
                                 name="logoPath"
-                                value={softwareDetails.logoPath}
-                                onChange={handleInputChange}
+                                value='logo'
                                 placeholder="Логотип"
                             />
                             <br />
@@ -158,6 +216,9 @@ const UserPage = () => {
                     </div>
                 </div>
             </main>
+            <footer className='dashboard-footer'>
+                <p>&copy; {new Date().getFullYear()} Учет программного обеспечения Все права защищены.</p>
+            </footer>
         </div>
     );
 };

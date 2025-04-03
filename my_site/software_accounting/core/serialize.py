@@ -14,8 +14,9 @@ class DeveloperSerializer(serializers.ModelSerializer):
 
 
 class DeviceSerializer(serializers.ModelSerializer):
-    model = Device
-    fields = ['id', 'name', 'os_name', 'ip_address', 'ram_value']
+    class Meta:
+        model = Device
+        fields = ['id', 'name', 'os_name', 'ip_address', 'ram_value']
 
 
 class DepartmentSerializer(serializers.ModelSerializer):

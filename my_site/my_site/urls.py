@@ -23,5 +23,7 @@ urlpatterns = [
     path('login/', UserLoginAPIView.as_view(), name="login"),
     path('reg/', UserRegistrationAPIView.as_view(), name="register"),
     path('software/', SoftwareAPIView.as_view(), name="softwares"),
-    path('departments/', DepartmentAPIView.as_view(), name='departments')
+    path('departments/', DepartmentAPIView.as_view(), name='departments'),
+    path('developers/', DeveloperAPIView.as_view(), name='developers'),
+    path('devices', DeviceAPIView.as_view(), name='devices')
 ]
