@@ -6,7 +6,7 @@ const RegPage = () => {
     const [lastname, setLastname] = useState('');
     const [name, setName] = useState('');
     const [middlename, setMiddlename] = useState('');
-    const [role, setRole] = useState('');
+    const [role, setRole] = useState('user');
     const [email, setEmail] = useState('');
 
     const [departments, setDepartments] = useState([]);
@@ -47,6 +47,7 @@ const RegPage = () => {
             try {
                 const response = await axios.get('http://127.0.0.1:8000/departments/');
                 setDepartments(response.data);
+                setSelectedDepartment(response.data[0].number);
             } catch (error) {
                 console.error('Ошибка при получении отделов:', error);
             }

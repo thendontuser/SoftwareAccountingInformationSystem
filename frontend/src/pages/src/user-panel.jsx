@@ -5,7 +5,7 @@ import '../styles/user-panel.css';
 const UserPage = () => {
     const [softwareName, setSoftwareName] = useState('');
     const [softwareVersion, setSoftwareVersion] = useState('');
-    const [softwareLicense, setSoftwareLicense] = useState('');
+    const [softwareLicense, setSoftwareLicense] = useState('Пробная');
     const [softwareLicenseBegin, setSoftwareLicenseBegin] = useState(new Date);
     const [softwareLicenseEnd, setSoftwareLicenseEnd] = useState(new Date);
     const [softwareLogoPath, setSoftwareLogoPath] = useState('');
@@ -35,6 +35,11 @@ const UserPage = () => {
             try {
                 const response = await axios.get('http://127.0.0.1:8000/software/');
                 setSoftwares(response.data);
+
+                setSoftwareName(response.data[0].name);
+                setSoftwareLogoPath(response.data[0].logo_path);
+                setDeveloperId(response.data[0].developer.id);
+                setDeveloperName(response.data[0].developer.name);
             } catch (error) {
                 console.error('Ошибка при получении списка ПО:', error);
             }
@@ -49,6 +54,8 @@ const UserPage = () => {
             try {
                 const response = await axios.get('http://127.0.0.1:8000/devices');
                 setDevices(response.data);
+                setDeviceName(response.data[0].name);
+                setDeviceNumber(response.data[0].number);
             } catch (error) {
                 console.error('Ошибка при получении списка ПО:', error);
             }
