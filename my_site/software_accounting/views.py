@@ -8,10 +8,21 @@ from django.forms.forms import ValidationError
 
 class SoftwareAPIView(APIView):
     def get(self, request) -> Response:
-        datail = [ {'name' : datail.name, 'version' : datail.version, 'license' : datail.license,
-                    'license_begin' : datail.license_begin, 'license_end' : datail.license_end,
-                    'id_device' : datail.id_device, 'id_developer' : datail.id_developer, 'logo_path' : datail.logo_path } 
-                    for datail in Software.objects.all() ]
+        datail = [
+            {
+                'name': software.name,
+                'version': software.version,
+                'license': software.license,
+                'license_begin': software.license_begin,
+                'license_end': software.license_end,
+                'developer': {
+                    'id': software.id_developer.id,
+                    'name': software.id_developer.name,
+                },
+                'logo_path': software.logo_path
+            }
+            for software in Software.objects.all()
+            ]
         return Response(datail)
     
     def post(self, request) -> Request | None:
@@ -35,7 +46,7 @@ class DeveloperAPIView(APIView):
 
 class DeviceAPIView(APIView):
     def get(self, request) -> Response:
-        datail = [ {'name' : datail.name, 'os_name' : datail.os_name, 'id_address' : datail.ip_address, 'ram_value' : datail.ram_value} for datail in Device.objects.all() ]
+        datail = [ {'number' : datail.id, 'name' : datail.name, 'os_name' : datail.os_name, 'id_address' : datail.ip_address, 'ram_value' : datail.ram_value} for datail in Device.objects.all() ]
         return Response(datail)
     
     def post(self, request) -> Response | None:

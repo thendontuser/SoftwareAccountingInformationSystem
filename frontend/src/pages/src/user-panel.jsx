@@ -3,15 +3,17 @@ import axios from 'axios';
 import '../styles/user-panel.css';
 
 const UserPage = () => {
-    const [softwareId, setSoftwareId] = useState(0);
     const [softwareName, setSoftwareName] = useState('');
     const [softwareVersion, setSoftwareVersion] = useState('');
     const [softwareLicense, setSoftwareLicense] = useState('');
     const [softwareLicenseBegin, setSoftwareLicenseBegin] = useState(new Date);
     const [softwareLicenseEnd, setSoftwareLicenseEnd] = useState(new Date);
-    const [deviceNumber, setDeviceNumber] = useState('');
-    const [developerId, setDeveloperId] = useState(0);
+    const [softwareLogoPath, setSoftwareLogoPath] = useState('');
+
+    const [deviceNumber, setDeviceNumber] = useState(0);
     const [deviceName, setDeviceName] = useState('');
+
+    const [developerId, setDeveloperId] = useState(0);
     const [developerName, setDeveloperName] = useState('');
 
     const [softwares, setSoftwares] = useState([]);
@@ -57,30 +59,40 @@ const UserPage = () => {
 
     const handleSoftwareChange = (value) => {
         softwares.forEach(software => {
-            if (software.id === value) {
+            if (software.name === value) {
                 setSoftwareName(software.name);
                 setSoftwareVersion(software.version);
                 setSoftwareLicense(software.license);
                 setSoftwareLicenseBegin(software.license_begin);
                 setSoftwareLicenseEnd(software.license_end);
-                setDeveloperId(software.id_developer);
-                
-                try {
-                    const response = axios.get('http://127.0.0.1:8000/developers/');
-                    response.data.forEach(developer => {
-                        if (developer.id === developerId) {
-                            setDeveloperName(developer.name);
-                        }
-                    });
-                } catch (error) {
-                    console.error('Ошибка при получении списка разработчиков:', error);
-                }
+                setSoftwareLogoPath(software.logo_path);
+                setDeveloperId(software.developer.id);
+                setDeveloperName(software.developer.name);
             }
         });
     };
 
     const handleDeviceChange = (value) => {
         setDeviceName(value);
+
+        devices.forEach(device => {
+            if (device.name === value) {
+                setDeviceNumber(device.number);
+                console.log(deviceNumber);
+            }
+        });
+    };
+
+    const handleLicenseChange = (value) => {
+        setSoftwareLicense(value)
+    };
+
+    const handleSoftwareLicenseBegin = (value) => {
+        setSoftwareLicenseBegin(value);
+    };
+
+    const handleSoftwareLicenseEnd = (value) => {
+        setSoftwareLicenseEnd(value);
     };
 
     const [softwareDetails, setSoftwareDetails] = useState({
@@ -97,7 +109,6 @@ const UserPage = () => {
 
     const handleSubmitRequest = (e) => {
         e.preventDefault();
-        console.log('Заявка на установку ПО:', softwareDetails);
         setSoftwareDetails({
             name: softwareName,
             version: '',
@@ -142,54 +153,47 @@ const UserPage = () => {
                                 onChange={(e) => handleDeviceChange(e.target.value)}
                                 required>
                                     {devices.map(device => (
-                                    <option value={device['id']}> {device['name']} </option>))}
+                                    <option value={device['name']}> {device['name']} </option>))}
+                            </select>
+                            <select 
+                                id="license" 
+                                value={softwareLicense}
+                                onChange={(e) => handleLicenseChange(e.target.value)}
+                                required>
+                                    <option value={'Пробная'}> {'Пробная'} </option>
+                                    <option value={'Бесплатная'}> {'Бесплатная'} </option>
+                                    <option value={'Коммерческая'}> {'Коммерческая'} </option>
                             </select>
 
                             <input
                                 type="text"
                                 name="version"
-                                value={softwareLicense}
+                                onChange={setSoftwareVersion}
                                 placeholder="Версия"
-                                readOnly
-                                required
-                            />
-                            <input
-                                type="text"
-                                name="license"
-                                value={softwareLicense}
-                                placeholder="Лицензия"
-                                readOnly
                                 required
                             />
                             <input
                                 type="date"
                                 name="startDate"
-                                value={softwareLicenseBegin}
+                                onChange={handleSoftwareLicenseBegin}
                                 placeholder="Дата начала лицензии"
-                                readOnly
                                 required
                             />
                             <input
                                 type="date"
                                 name="endDate"
-                                value={softwareLicenseEnd}
+                                onChange={handleSoftwareLicenseEnd}
                                 placeholder="Дата окончания лицензии"
-                                readOnly
                                 required
                             />
                             <input
                                 type="text"
                                 name="developer"
-                                value={developerName}
+                                value={'Разработчик: ' + developerName}
                                 placeholder="Разработчик"
                                 readOnly
                             />
-                            <input
-                                type="text"
-                                name="logoPath"
-                                value='logo'
-                                placeholder="Логотип"
-                            />
+                            <img src={softwareLogoPath} width="100" height="100"></img>
                             <br />
                             <button type="submit" className="submit-button">Отправить заявку</button>
                         </form>
@@ -217,7 +221,7 @@ const UserPage = () => {
                 </div>
             </main>
             <footer className='dashboard-footer'>
-                <p>&copy; {new Date().getFullYear()} Учет программного обеспечения Все права защищены.</p>
+                <p>&copy; {new Date().getFullYear()} Учет программного обеспечения. Все права защищены.</p>
             </footer>
         </div>
     );
