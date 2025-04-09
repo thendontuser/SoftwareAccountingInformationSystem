@@ -1,9 +1,15 @@
 from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.views import APIView
 from software_accounting.models import *
 from rest_framework.response import Response
 from software_accounting.core.serialize import *
 from django.forms.forms import ValidationError
+from django.core import mail
+from django.conf import settings
+
+from django.http import JsonResponse
+import json
 
 
 class SoftwareAPIView(APIView):
@@ -25,11 +31,12 @@ class SoftwareAPIView(APIView):
             ]
         return Response(datail)
     
-    def post(self, request) -> Request | None:
+    def post(self, request) -> Response | None:
         serializer = SoftwareSerializer(data=request.data)
+        instance = None
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            return  Response(serializer.data)
+            instance = serializer.save()
+            return Response({'id' : instance.id})
         
 
 class DeveloperAPIView(APIView):
@@ -41,7 +48,7 @@ class DeveloperAPIView(APIView):
         serializer = DeveloperSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
-            return  Response(serializer.data)
+            return Response(serializer.data)
         
 
 class DeviceAPIView(APIView):
@@ -53,7 +60,7 @@ class DeviceAPIView(APIView):
         serializer = DeviceSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
-            return  Response(serializer.data)
+            return Response(serializer.data)
         
 
 class DepartmentAPIView(APIView):
@@ -70,7 +77,7 @@ class DepartmentAPIView(APIView):
 
 class UserRegistrationAPIView(APIView):
     def get(self, request) -> Response:
-        datail = [ {'surname' : datail.surname, 'name' : datail.name, 'middlename' : datail.middlename, 'role_name' : datail.role_name, 
+        datail = [ {'id' : datail.id, 'surname' : datail.surname, 'name' : datail.name, 'middlename' : datail.middlename, 'role_name' : datail.role_name, 
                     'email' : datail.email, 'department_number' : datail.department_number.id,  'login' : datail.login,
                       'password_hash' : datail.password_hash} for datail in User.objects.all() ]
         return Response(datail)
@@ -105,4 +112,40 @@ class RequestAPIView(APIView):
         serializer = RequestSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
-            return  Response(serializer.data)
+        return Response(serializer.data)
+    
+
+@csrf_exempt
+def check_request(request) -> JsonResponse:
+    serializer = RequestSerializer()
+    deviceAPIView = DeviceAPIView()
+    device = None
+    is_valid = False
+
+    request_data = json.loads(request.body)
+
+    for _device in deviceAPIView.get(request=None).data:
+        if request_data['software']['id_device'] == _device['number']:
+            device = _device
+            break
+
+    result = serializer.request_message(request_data['software'], device)
+    if result['state']:
+        is_valid = True
+    
+    send_result = send_mail(request_data['user']['email'], 'Ответ на заявку установки ПО', result['message'])
+    return JsonResponse({'state' : is_valid})
+
+def send_mail(to : str, subject : str, message : str) -> str:
+    context = {}
+
+    if to and subject and message:
+        try:
+            mail.send_mail(subject, message, settings.EMAIL_HOST_USER, [to])
+            context['result'] = 'Email sent successfully'
+        except Exception as e:
+            context['result'] = f'Error sending email: {e}'
+    else:
+        context['result'] = 'All fields are required'
+    
+    return context

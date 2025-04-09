@@ -54,6 +54,7 @@ class UserSerializer(serializers.ModelSerializer):
             user = User.objects.get(login=validated_data['login'])
             if (user.check_password(validated_data['password_hash'])):
                 return {
+                    'id' : user.id,
                     'surname' : user.surname, 
                     'name' : user.name, 
                     'middlename' : user.middlename,
@@ -71,3 +72,8 @@ class RequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Request
         fields = ['id', 'id_software', 'id_user']
+
+    def request_message(self, software : dict, device : dict) -> dict:
+        if (device['ram_value'] < 4):
+            return {'state' : False, 'message' : 'На устройство ' + device['name'] + ' нельзя установить ' + software['name'] + ', так как не хватает оперативной памяти\nРекомендуемое значение: 8 Гб\nИмеющееся: ' + device['ram_value']}
+        return {'state' : True, 'message' : 'Ваша заявка прошла проверку и программное обеспечение ' + software['name'] + ' можно установить на устройство ' + device['name']}

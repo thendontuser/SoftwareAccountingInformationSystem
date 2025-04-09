@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../styles/login.css'; 
 
@@ -15,6 +16,8 @@ const RegPage = () => {
     const [login, setLogin] = useState('');
     const [loginError, setLoginError] = useState('');
     const [password, setPassword] = useState('');
+
+    const navigate = useNavigate();
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -34,7 +37,21 @@ const RegPage = () => {
                     setLoginError('Логин занят');
                 } else {
                     setLoginError('');
-                    console.log('зареган');
+                    axios.post('http://127.0.0.1:8000/departments/', {"number" : selectedDepartment, 'name' : 'none'}).then(response_department => {
+                        localStorage.setItem("user_info", JSON.stringify({
+                            'id' : response.id,
+                            'surname' : lastname,
+                            'name' : name,
+                            'middlename' : middlename,
+                            'email' : email,
+                            'department' : response_department.data
+                        }));
+                        if (role === 'user') {
+                            navigate('/userPage');
+                        } else {
+                            // navigate('adminPage/');
+                        }
+                    });
                 }
             });
         } catch(error) {

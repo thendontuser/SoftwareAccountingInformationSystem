@@ -25,5 +25,7 @@ urlpatterns = [
     path('software/', SoftwareAPIView.as_view(), name="softwares"),
     path('departments/', DepartmentAPIView.as_view(), name='departments'),
     path('developers/', DeveloperAPIView.as_view(), name='developers'),
-    path('devices', DeviceAPIView.as_view(), name='devices')
+    path('devices/', DeviceAPIView.as_view(), name='devices'),
+    path('request/', RequestAPIView.as_view(), name='request'),
+    path('check_request/', check_request, name='check_request')
 ]

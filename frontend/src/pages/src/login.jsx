@@ -40,6 +40,7 @@ const LoginPage = () => {
                             return;
                         } else {
                             userData = {
+                                'id' : response.data['id'],
                                 'surname' : response.data['surname'],
                                 'name' : response.data['name'],
                                 'middlename' : response.data['middlename'],

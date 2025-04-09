@@ -21,6 +21,8 @@ const UserPage = () => {
 
     const [userData, setUserData] = useState(null);
 
+    window.csrfToken = '{{ csrf_token }}';
+
     // получение данных пользователя
     useEffect(() => {
         const storedUserData = localStorage.getItem("user_info");
@@ -52,7 +54,7 @@ const UserPage = () => {
     useEffect(() => {
         const getDevices = async () => {
             try {
-                const response = await axios.get('http://127.0.0.1:8000/devices');
+                const response = await axios.get('http://127.0.0.1:8000/devices/');
                 setDevices(response.data);
                 setDeviceName(response.data[0].name);
                 setDeviceNumber(response.data[0].number);
@@ -70,8 +72,6 @@ const UserPage = () => {
                 setSoftwareName(software.name);
                 setSoftwareVersion(software.version);
                 setSoftwareLicense(software.license);
-                setSoftwareLicenseBegin(software.license_begin);
-                setSoftwareLicenseEnd(software.license_end);
                 setSoftwareLogoPath(software.logo_path);
                 setDeveloperId(software.developer.id);
                 setDeveloperName(software.developer.name);
@@ -85,46 +85,38 @@ const UserPage = () => {
         devices.forEach(device => {
             if (device.name === value) {
                 setDeviceNumber(device.number);
-                console.log(deviceNumber);
             }
         });
     };
 
-    const handleLicenseChange = (value) => {
-        setSoftwareLicense(value)
-    };
-
-    const handleSoftwareLicenseBegin = (value) => {
-        setSoftwareLicenseBegin(value);
-    };
-
-    const handleSoftwareLicenseEnd = (value) => {
-        setSoftwareLicenseEnd(value);
-    };
-
-    const [softwareDetails, setSoftwareDetails] = useState({
-        name: softwareName,
-        version: '',
-        license: '',
-        startDate: '',
-        endDate: '',
-        computerNumber: deviceNumber,
-        developer: developerId,
-        logoPath: ''
-    });
     const [report, setReport] = useState(null);
 
     const handleSubmitRequest = (e) => {
         e.preventDefault();
-        setSoftwareDetails({
-            name: softwareName,
-            version: '',
-            license: '',
-            startDate: '',
-            endDate: '',
-            computerNumber: deviceNumber,
-            developer: developerId,
-            logoPath: ''
+        const data = {
+            'software' : {
+                'name' : softwareName,
+                'version' : softwareVersion,
+                'license' : softwareLicense,
+                'license_begin' : softwareLicenseBegin.toString(),
+                'license_end' : softwareLicenseEnd.toString(),
+                'id_device' : deviceNumber,
+                'id_developer' : developerId,
+                'logo_path' : softwareLogoPath
+            },
+            'user' : {
+                'id' : userData.id,
+                'email' : userData.email
+            }
+        };
+        axios.post('http://127.0.0.1:8000/check_request/', data, {headers : {'X-CSRFToken' : window.csrfToken}}).then(req_response => {
+            if (req_response.data['state'] === true) {
+                axios.post('http://127.0.0.1:8000/software/', data['software']).then(soft_response => {
+                    axios.post('http://127.0.0.1:8000/request/', {'id_software' : soft_response.data['id'], 'id_user' : userData.id}).then(response => {
+                        alert('Ваша заявка будет рассмотрена, и уведомление придет на почту ' + userData.email);
+                    })
+                })
+            }
         });
     };
 
@@ -145,7 +137,7 @@ const UserPage = () => {
                 <div className="horizontal-blocks">
                     <section className="request-section block">
                         <h2>Заявка на установку ПО</h2>
-                        <form onSubmit={handleSubmitRequest}>
+                        <form onSubmit={handleSubmitRequest} method='post'>
                             <select 
                                 id="software" 
                                 value={softwareName}
@@ -165,7 +157,7 @@ const UserPage = () => {
                             <select 
                                 id="license" 
                                 value={softwareLicense}
-                                onChange={(e) => handleLicenseChange(e.target.value)}
+                                onChange={(e) => setSoftwareLicense(e.target.value)}
                                 required>
                                     <option value={'Пробная'}> {'Пробная'} </option>
                                     <option value={'Бесплатная'}> {'Бесплатная'} </option>
@@ -175,21 +167,24 @@ const UserPage = () => {
                             <input
                                 type="text"
                                 name="version"
-                                onChange={setSoftwareVersion}
+                                value={softwareVersion}
+                                onChange={(e) => setSoftwareVersion(e.target.value)}
                                 placeholder="Версия"
                                 required
                             />
                             <input
                                 type="date"
                                 name="startDate"
-                                onChange={handleSoftwareLicenseBegin}
+                                value={softwareLicenseBegin}
+                                onChange={(e) => setSoftwareLicenseBegin(e.target.value)}
                                 placeholder="Дата начала лицензии"
                                 required
                             />
                             <input
                                 type="date"
                                 name="endDate"
-                                onChange={handleSoftwareLicenseEnd}
+                                value={softwareLicenseEnd}
+                                onChange={(e) => setSoftwareLicenseEnd(e.target.value)}
                                 placeholder="Дата окончания лицензии"
                                 required
                             />
