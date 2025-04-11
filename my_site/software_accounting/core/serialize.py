@@ -73,6 +73,18 @@ class RequestSerializer(serializers.ModelSerializer):
         model = Request
         fields = ['id', 'id_software', 'id_user']
 
+    def get_user_requests(self, id_user) -> str:
+        result = ''
+        num = 1
+        for request in Request.objects.all():
+            if request.id_user.id == id_user:
+                software = Software.objects.get(id=request.id_software.id)
+                result += f'№{num}\nПрограммное обеспечение: {software.name}\nУстройство: {Device.objects.get(id=software.id_device.id).name}\n\n'
+                num += 1
+        if (len(result) > 0):
+            return result
+        return 'У вас пока нет заявок'
+
     def request_message(self, software : dict, device : dict) -> dict:
         if (device['ram_value'] < 4):
             return {'state' : False, 'message' : 'На устройство ' + device['name'] + ' нельзя установить ' + software['name'] + ', так как не хватает оперативной памяти\nРекомендуемое значение: 8 Гб\nИмеющееся: ' + device['ram_value']}

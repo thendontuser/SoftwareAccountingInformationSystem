@@ -28,7 +28,7 @@ class SoftwareAPIView(APIView):
                 'logo_path': software.logo_path
             }
             for software in Software.objects.all()
-            ]
+        ]
         return Response(datail)
     
     def post(self, request) -> Response | None:
@@ -105,8 +105,11 @@ class UserLoginAPIView(APIView):
         
 class RequestAPIView(APIView):
     def get(self, request) -> Response:
-        datail = [ {'id_software' : datail.id_software, 'id_user' : datail.id_user} for datail in Request.objects.all() ]
-        return Response(datail)
+        if request.GET.get('is_all_users') == True:
+            datail = [ {'id_software' : datail.id_software, 'id_user' : datail.id_user} for datail in Request.objects.all() ]
+            return Response(datail)
+        serializer = RequestSerializer()
+        return Response(data=serializer.get_user_requests(int(request.GET.get('id_user'))))
     
     def post(self, request) -> Response | None | ValidationError:
         serializer = RequestSerializer(data=request.data)
@@ -115,26 +118,34 @@ class RequestAPIView(APIView):
         return Response(serializer.data)
     
 
-@csrf_exempt
-def check_request(request) -> JsonResponse:
-    serializer = RequestSerializer()
-    deviceAPIView = DeviceAPIView()
-    device = None
-    is_valid = False
-
-    request_data = json.loads(request.body)
-
-    for _device in deviceAPIView.get(request=None).data:
-        if request_data['software']['id_device'] == _device['number']:
-            device = _device
-            break
-
-    result = serializer.request_message(request_data['software'], device)
-    if result['state']:
-        is_valid = True
+class CheckRequestAPIView(APIView):
+    def get(self, request) -> Response:
+        return Response('GET')
     
-    send_result = send_mail(request_data['user']['email'], 'Ответ на заявку установки ПО', result['message'])
-    return JsonResponse({'state' : is_valid})
+    def post(self, req) -> Response:
+        if req.method == 'POST':
+            serializer = RequestSerializer()
+            deviceAPIView = DeviceAPIView()
+            device = None
+            is_valid = False
+
+            software = req.data['software']
+            user = req.data['user']
+            devices = deviceAPIView.get(request=None).data
+
+            for d in devices:
+                if software['id_device'] == d['number']:
+                    device = d
+                    break
+
+            result = serializer.request_message(software, device)
+            if result['state']:
+                is_valid = True
+            
+            send_result = send_mail(user['email'], 'Ответ на заявку установки ПО', result['message'])
+            return Response({'state' : is_valid})
+        return Response({'error': 'Invalid request method'}, status=405)
+
 
 def send_mail(to : str, subject : str, message : str) -> str:
     context = {}

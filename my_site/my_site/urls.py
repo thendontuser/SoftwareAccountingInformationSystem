@@ -27,5 +27,5 @@ urlpatterns = [
     path('developers/', DeveloperAPIView.as_view(), name='developers'),
     path('devices/', DeviceAPIView.as_view(), name='devices'),
     path('request/', RequestAPIView.as_view(), name='request'),
-    path('check_request/', check_request, name='check_request')
+    path('check_request/', CheckRequestAPIView.as_view(), name='check_request')
 ]

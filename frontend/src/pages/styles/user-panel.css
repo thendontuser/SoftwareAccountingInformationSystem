@@ -65,6 +65,10 @@ textarea {
     border: 1px solid #ccc;
 }
 
+textarea {
+    height: 300px;
+}
+
 .submit-button,
 .report-button {
     margin-top: 10px;

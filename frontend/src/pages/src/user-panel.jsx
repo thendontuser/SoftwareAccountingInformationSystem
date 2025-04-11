@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../styles/user-panel.css';
+import { data } from 'react-router-dom';
 
 const UserPage = () => {
     const [softwareName, setSoftwareName] = useState('');
@@ -18,8 +19,9 @@ const UserPage = () => {
 
     const [softwares, setSoftwares] = useState([]);
     const [devices, setDevices] = useState([]);
+    const [requests, setRequests] = useState('');
 
-    const [userData, setUserData] = useState(null);
+    const [userData, setUserData] = useState([]);
 
     window.csrfToken = '{{ csrf_token }}';
 
@@ -46,7 +48,6 @@ const UserPage = () => {
                 console.error('Ошибка при получении списка ПО:', error);
             }
         }; 
-
         getSoftwares();
     }, []);
 
@@ -59,12 +60,26 @@ const UserPage = () => {
                 setDeviceName(response.data[0].name);
                 setDeviceNumber(response.data[0].number);
             } catch (error) {
-                console.error('Ошибка при получении списка ПО:', error);
+                console.error('Ошибка при получении списка утсройств:', error);
             }
         }; 
-
         getDevices();
     }, []);
+
+    // получение списка заявок
+    useEffect(() => {
+        const getRequests = async () => {
+            if (userData?.id) {
+                try {
+                    const response = await axios.get('http://127.0.0.1:8000/request/', {params: {is_all_users : false, id_user : userData.id}});
+                    setRequests(response.data);
+                } catch (error) {
+                    setRequests('Ошибка при получении списка Заявок:');
+                }
+            }
+        };
+        getRequests();
+    }, [userData]);
 
     const handleSoftwareChange = (value) => {
         softwares.forEach(software => {
@@ -94,7 +109,7 @@ const UserPage = () => {
     const handleSubmitRequest = (e) => {
         e.preventDefault();
         const data = {
-            'software' : {
+            software : {
                 'name' : softwareName,
                 'version' : softwareVersion,
                 'license' : softwareLicense,
@@ -104,14 +119,14 @@ const UserPage = () => {
                 'id_developer' : developerId,
                 'logo_path' : softwareLogoPath
             },
-            'user' : {
+            user : {
                 'id' : userData.id,
                 'email' : userData.email
             }
         };
-        axios.post('http://127.0.0.1:8000/check_request/', data, {headers : {'X-CSRFToken' : window.csrfToken}}).then(req_response => {
+        axios.post('http://127.0.0.1:8000/check_request/', data).then(req_response => {
             if (req_response.data['state'] === true) {
-                axios.post('http://127.0.0.1:8000/software/', data['software']).then(soft_response => {
+                axios.post('http://127.0.0.1:8000/software/', data['software'], {headers: {'Content-Type': 'application/json',}}).then(soft_response => {
                     axios.post('http://127.0.0.1:8000/request/', {'id_software' : soft_response.data['id'], 'id_user' : userData.id}).then(response => {
                         alert('Ваша заявка будет рассмотрена, и уведомление придет на почту ' + userData.email);
                     })
@@ -215,9 +230,7 @@ const UserPage = () => {
 
                         <section className='my-requests block'>
                             <h2>Ваши заявки</h2>
-                            <textarea readOnly>
-                                
-                            </textarea>
+                            <textarea readOnly value={requests}></textarea>
                         </section>
                     </div>
                 </div>
