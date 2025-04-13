@@ -37,7 +37,7 @@ const UserPage = () => {
     useEffect(() => {
         const getSoftwares = async () => {
             try {
-                const response = await axios.get('http://127.0.0.1:8000/software/');
+                const response = await axios.get('http://127.0.0.1:8000/software/', {params: {'is_all' : false}});
                 setSoftwares(response.data);
 
                 setSoftwareName(response.data[0].name);
@@ -136,7 +136,23 @@ const UserPage = () => {
     };
 
     const handleGetReport = () => {
-        
+        const getReportPDF = async () => {
+            await axios.get('http://127.0.0.1:8000/report/', {params : {department : userData.department}, responseType : 'blob'}).then(response => {
+                try {
+                    const url = window.URL.createObjectURL(new Blob([response.data]));
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'Перечень_ПО_' + userData.department + '.pdf';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                } catch(error) {
+                    console.error('Error downloading PDF:', error);
+                }
+            });
+        };
+        getReportPDF();
     };
 
     return (
@@ -220,12 +236,6 @@ const UserPage = () => {
                         <section className="report-section block">
                             <h2>Перечень ПО({userData?.department})</h2>
                             <button onClick={handleGetReport} className="report-button">Получить отчет</button>
-                            {report && (
-                                <div className="report-output">
-                                    <h3>Отчет:</h3>
-                                    <p>{report}</p>
-                                </div>
-                            )}
                         </section>
 
                         <section className='my-requests block'>

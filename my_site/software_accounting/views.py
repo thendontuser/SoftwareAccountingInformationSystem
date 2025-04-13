@@ -14,22 +14,25 @@ import json
 
 class SoftwareAPIView(APIView):
     def get(self, request) -> Response:
-        datail = [
-            {
-                'name': software.name,
-                'version': software.version,
-                'license': software.license,
-                'license_begin': software.license_begin,
-                'license_end': software.license_end,
-                'developer': {
-                    'id': software.id_developer.id,
-                    'name': software.id_developer.name,
-                },
-                'logo_path': software.logo_path
-            }
-            for software in Software.objects.all()
-        ]
-        return Response(datail)
+        if request.GET.get('is_all') == True:
+            datail = [
+                {
+                    'name': software.name,
+                    'version': software.version,
+                    'license': software.license,
+                    'license_begin': software.license_begin,
+                    'license_end': software.license_end,
+                    'developer': {
+                        'id': software.id_developer.id,
+                        'name': software.id_developer.name,
+                    },
+                    'logo_path': software.logo_path
+                }
+                for software in Software.objects.all()
+            ]
+            return Response(datail)
+        serializer = SoftwareSerializer()
+        return Response(serializer.get_multiple())
     
     def post(self, request) -> Response | None:
         serializer = SoftwareSerializer(data=request.data)
@@ -116,6 +119,17 @@ class RequestAPIView(APIView):
         if serializer.is_valid(raise_exception=True):
             serializer.save()
         return Response(serializer.data)
+    
+
+class ReportAPIView(APIView):
+    def get(self, request):
+        department = request.GET.get('department')
+        serializer = SoftwareSerializer()
+        softwares = serializer.get_softwares_by_department(department)
+        return get_report(softwares, department)
+
+    def post(self, request):
+        pass
     
 
 class CheckRequestAPIView(APIView):
