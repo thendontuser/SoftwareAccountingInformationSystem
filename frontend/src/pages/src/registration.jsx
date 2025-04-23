@@ -49,7 +49,7 @@ const RegPage = () => {
                         if (role === 'user') {
                             navigate('/userPage');
                         } else {
-                            // navigate('adminPage/');
+                            navigate('/adminPage');
                         }
                     });
                 }

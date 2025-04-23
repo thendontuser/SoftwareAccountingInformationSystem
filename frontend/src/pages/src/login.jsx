@@ -53,7 +53,7 @@ const LoginPage = () => {
                             if (response.data['role_name'] === 'user') {
                                 navigate('userPage/');
                             } else {
-                                // navigate('adminPage/');
+                                navigate('adminPage/');
                             }
                         }
                     });
