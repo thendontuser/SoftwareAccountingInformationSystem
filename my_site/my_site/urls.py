@@ -27,6 +27,7 @@ urlpatterns = [
     path('developers/', DeveloperAPIView.as_view(), name='developers'),
     path('devices/', DeviceAPIView.as_view(), name='devices'),
     path('request/', RequestAPIView.as_view(), name='request'),
+    path('users/', UserRegistrationAPIView.as_view(), name='users'),
     path('check_request/', CheckRequestAPIView.as_view(), name='check_request'),
     path('report/', ReportAPIView.as_view(), name='report')
 ]

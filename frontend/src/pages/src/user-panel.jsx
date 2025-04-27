@@ -104,8 +104,6 @@ const UserPage = () => {
         });
     };
 
-    const [report, setReport] = useState(null);
-
     const handleSubmitRequest = (e) => {
         e.preventDefault();
         const data = {

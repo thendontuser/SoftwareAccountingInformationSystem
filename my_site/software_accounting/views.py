@@ -14,9 +14,10 @@ import json
 
 class SoftwareAPIView(APIView):
     def get(self, request) -> Response:
-        if request.GET.get('is_all') == True:
+        if request.GET.get('is_all') == 'true':
             datail = [
                 {
+                    'id': software.id,
                     'name': software.name,
                     'version': software.version,
                     'license': software.license,
@@ -25,6 +26,10 @@ class SoftwareAPIView(APIView):
                     'developer': {
                         'id': software.id_developer.id,
                         'name': software.id_developer.name,
+                    },
+                    'device': {
+                        'id': software.id_device.id,
+                        'name': software.id_device.name
                     },
                     'logo_path': software.logo_path
                 }
@@ -44,7 +49,7 @@ class SoftwareAPIView(APIView):
 
 class DeveloperAPIView(APIView):
     def get(self, request) -> Response:
-        datail = [ {'name' : datail.name, 'type_of_company' : datail.type_of_company, 'location' : datail.location} for datail in Developer.objects.all() ]
+        datail = [ {'id' : datail.id, 'name' : datail.name, 'type_of_company' : datail.type_of_company, 'location' : datail.location} for datail in Developer.objects.all() ]
         return Response(datail)
     
     def post(self, request) -> Response | None:
@@ -56,7 +61,7 @@ class DeveloperAPIView(APIView):
 
 class DeviceAPIView(APIView):
     def get(self, request) -> Response:
-        datail = [ {'number' : datail.id, 'name' : datail.name, 'os_name' : datail.os_name, 'id_address' : datail.ip_address, 'ram_value' : datail.ram_value} for datail in Device.objects.all() ]
+        datail = [ {'number' : datail.id, 'name' : datail.name, 'os_name' : datail.os_name, 'ip_address' : datail.ip_address, 'ram_value' : datail.ram_value} for datail in Device.objects.all() ]
         return Response(datail)
     
     def post(self, request) -> Response | None:
@@ -81,7 +86,7 @@ class DepartmentAPIView(APIView):
 class UserRegistrationAPIView(APIView):
     def get(self, request) -> Response:
         datail = [ {'id' : datail.id, 'surname' : datail.surname, 'name' : datail.name, 'middlename' : datail.middlename, 'role_name' : datail.role_name, 
-                    'email' : datail.email, 'department_number' : datail.department_number.id,  'login' : datail.login,
+                    'email' : datail.email, 'department' : datail.department_number.name,  'login' : datail.login,
                       'password_hash' : datail.password_hash} for datail in User.objects.all() ]
         return Response(datail)
     
@@ -108,11 +113,12 @@ class UserLoginAPIView(APIView):
         
 class RequestAPIView(APIView):
     def get(self, request) -> Response:
-        if request.GET.get('is_all_users') == True:
-            datail = [ {'id_software' : datail.id_software, 'id_user' : datail.id_user} for datail in Request.objects.all() ]
+        if request.GET.get('is_all_users') == 'true':
+            datail = [ {'number' : datail.id, 'software' : datail.id_software.name, 'user' : f'{datail.id_user.surname} {datail.id_user.name} {datail.id_user.middlename}'} for datail in Request.objects.all() ]
             return Response(datail)
-        serializer = RequestSerializer()
-        return Response(data=serializer.get_user_requests(int(request.GET.get('id_user'))))
+        else:
+            serializer = RequestSerializer()
+            return Response(data=serializer.get_user_requests(int(request.GET.get('id_user'))))
     
     def post(self, request) -> Response | None | ValidationError:
         serializer = RequestSerializer(data=request.data)
