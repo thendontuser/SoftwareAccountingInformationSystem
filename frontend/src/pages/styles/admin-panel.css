@@ -284,6 +284,13 @@ button:active {
   border-radius: 4px;
 }
 
+.dashboard-footer {
+  padding: 10px 20px;
+  background-color: #ffd1d0;
+  border-radius: 50px 50px 50px 50px;
+  height: 50px;
+}
+
 /* Адаптивность */
 @media (max-width: 768px) {
   thead th, tbody td {

@@ -21,6 +21,8 @@ const UserPage = () => {
     const [devices, setDevices] = useState([]);
     const [requests, setRequests] = useState('');
 
+    const [requestStatus, setRequestStatus] = useState('');
+
     const [userData, setUserData] = useState([]);
 
     window.csrfToken = '{{ csrf_token }}';
@@ -125,11 +127,12 @@ const UserPage = () => {
         axios.post('http://127.0.0.1:8000/check_request/', data).then(req_response => {
             if (req_response.data['state'] === true) {
                 axios.post('http://127.0.0.1:8000/software/', data['software'], {headers: {'Content-Type': 'application/json',}}).then(soft_response => {
-                    axios.post('http://127.0.0.1:8000/request/', {'id_software' : soft_response.data['id'], 'id_user' : userData.id}).then(response => {
-                        alert('Ваша заявка будет рассмотрена, и уведомление придет на почту ' + userData.email);
-                    })
-                })
+                    axios.post('http://127.0.0.1:8000/request/', {'id_software' : soft_response.data['id'], 'id_user' : userData.id, 'status' : 'Одобрено'}).then(response => {});
+                });
+            } else {
+                axios.post('http://127.0.0.1:8000/request/', {'id_software' : null, 'id_user' : userData.id, 'status' : 'Отклонено'}).then(response => {});
             }
+            alert('Ваша заявка будет рассмотрена, и уведомление придет на почту ' + userData.email);
         });
     };
 

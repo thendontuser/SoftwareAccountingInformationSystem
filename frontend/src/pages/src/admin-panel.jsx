@@ -309,7 +309,6 @@ const AdminPanel = () => {
           case 'users':
             return (
               <div className="table-container">
-                <button className="add-button" onClick={handleAdd}>Добавить пользователя</button>
                 <div className="table-scroll-wrapper">
                   <table>
                     <thead>
@@ -421,7 +420,14 @@ const AdminPanel = () => {
                 </div>
                 <div className="form-group">
                   <label>Устройство:</label>
-                  <input type="number" name="id_device" value={currentItem.id_device || ''} onChange={handleInputChange} />
+                  <select 
+                    id="device"
+                    value={''}
+                    onChange={(e) => handleInputChange(e.target.value)}
+                    required>
+                        {devices.map(device => (
+                        <option value={device['number']}> {device['name']} </option>))}
+                  </select>
                 </div>
                 <div className="form-group">
                   <label>Разработчик:</label>
@@ -589,6 +595,10 @@ const AdminPanel = () => {
         </main>
         
         {renderEditForm()}
+
+        <footer className='dashboard-footer'>
+          <p>&copy; {new Date().getFullYear()} Учет программного обеспечения. Все права защищены.</p>
+        </footer>
       </div>
     );
 };

@@ -114,8 +114,13 @@ class UserLoginAPIView(APIView):
 class RequestAPIView(APIView):
     def get(self, request) -> Response:
         if request.GET.get('is_all_users') == 'true':
-            datail = [ {'number' : datail.id, 'software' : datail.id_software.name, 'user' : f'{datail.id_user.surname} {datail.id_user.name} {datail.id_user.middlename}'} for datail in Request.objects.all() ]
-            return Response(datail)
+            datails = []
+            for datail in Request.objects.all():
+                if datail.id_software == None:
+                    datails.append({'number' : datail.id, 'software' : '---', 'user' : f'{datail.id_user.surname} {datail.id_user.name} {datail.id_user.middlename}', 'status' : datail.status})
+                else:
+                    datails.append({'number' : datail.id, 'software' : datail.id_software.name, 'user' : f'{datail.id_user.surname} {datail.id_user.name} {datail.id_user.middlename}', 'status' : datail.status})
+            return Response(datails)
         else:
             serializer = RequestSerializer()
             return Response(data=serializer.get_user_requests(int(request.GET.get('id_user'))))

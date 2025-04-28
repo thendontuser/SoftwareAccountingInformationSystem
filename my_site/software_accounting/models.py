@@ -79,5 +79,6 @@ class Request(models.Model):
         Определяет модель таблицы Request в базе данных
     '''
 
-    id_software = models.ForeignKey('Software', on_delete=models.PROTECT)
+    id_software = models.ForeignKey('Software', on_delete=models.PROTECT, null=True)
     id_user = models.ForeignKey('User', on_delete=models.PROTECT)
+    status = models.CharField(max_length=32, null=True)
