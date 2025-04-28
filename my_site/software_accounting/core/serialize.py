@@ -49,8 +49,9 @@ class SoftwareSerializer(serializers.ModelSerializer):
     def get_softwares_by_department(self, department: str) -> list[Software]:
         softwares = []
         for request in Request.objects.all():
-            if request.id_user.department_number.name == department:
-                softwares.append(Software.objects.get(id=request.id_software.id))
+            if request.id_software != None:
+                if request.id_user.department_number.name == department:
+                    softwares.append(Software.objects.get(id=request.id_software.id))
         return softwares
 
 
