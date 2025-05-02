@@ -16,6 +16,7 @@ class SoftwareSerializer(serializers.ModelSerializer):
     def __add_software(self, softwares: list, software: Software) -> list:
         softwares.append(
             {
+                'id': software.id,
                 'name': software.name,
                 'version': software.version,
                 'license': software.license,

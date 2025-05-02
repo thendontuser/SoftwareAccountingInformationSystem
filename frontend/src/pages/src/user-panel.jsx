@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import axios from 'axios';
 import '../styles/user-panel.css';
 import { data } from 'react-router-dom';
 
 const UserPage = () => {
+    const [softwareId, setSoftwareId] = useState(0);
     const [softwareName, setSoftwareName] = useState('');
     const [softwareVersion, setSoftwareVersion] = useState('');
     const [softwareLicense, setSoftwareLicense] = useState('Пробная');
@@ -20,8 +21,6 @@ const UserPage = () => {
     const [softwares, setSoftwares] = useState([]);
     const [devices, setDevices] = useState([]);
     const [requests, setRequests] = useState('');
-
-    const [requestStatus, setRequestStatus] = useState('');
 
     const [userData, setUserData] = useState([]);
 
@@ -42,6 +41,7 @@ const UserPage = () => {
                 const response = await axios.get('http://127.0.0.1:8000/software/', {params: {'is_all' : false}});
                 setSoftwares(response.data);
 
+                setSoftwareId(response.data[0].id);
                 setSoftwareName(response.data[0].name);
                 setSoftwareLogoPath(response.data[0].logo_path);
                 setDeveloperId(response.data[0].developer.id);
@@ -86,6 +86,7 @@ const UserPage = () => {
     const handleSoftwareChange = (value) => {
         softwares.forEach(software => {
             if (software.name === value) {
+                setSoftwareId(software.id);
                 setSoftwareName(software.name);
                 setSoftwareVersion(software.version);
                 setSoftwareLicense(software.license);
@@ -126,11 +127,9 @@ const UserPage = () => {
         };
         axios.post('http://127.0.0.1:8000/check_request/', data).then(req_response => {
             if (req_response.data['state'] === true) {
-                axios.post('http://127.0.0.1:8000/software/', data['software'], {headers: {'Content-Type': 'application/json',}}).then(soft_response => {
-                    axios.post('http://127.0.0.1:8000/request/', {'id_software' : soft_response.data['id'], 'id_user' : userData.id, 'status' : 'Одобрено'}).then(response => {});
-                });
+                axios.post('http://127.0.0.1:8000/request/', {'id_software' : softwareId, 'id_user' : userData.id, 'status' : 'Одобрено'}).then(response => {});
             } else {
-                axios.post('http://127.0.0.1:8000/request/', {'id_software' : null, 'id_user' : userData.id, 'status' : 'Отклонено'}).then(response => {});
+                axios.post('http://127.0.0.1:8000/request/', {'id_software' : softwareId, 'id_user' : userData.id, 'status' : 'Отклонено'}).then(response => {});
             }
             alert('Ваша заявка будет рассмотрена, и уведомление придет на почту ' + userData.email);
         });
@@ -176,7 +175,7 @@ const UserPage = () => {
                                 onChange={(e) => handleSoftwareChange(e.target.value)}
                                 required>
                                     {softwares.map(software => (
-                                    <option value={software['id']}> {software['name']} </option>))}
+                                    <option value={software['name']}> {software['name']} </option>))}
                             </select>
                             <select 
                                 id="device"

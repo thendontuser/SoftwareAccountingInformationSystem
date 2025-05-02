@@ -116,10 +116,7 @@ class RequestAPIView(APIView):
         if request.GET.get('is_all_users') == 'true':
             datails = []
             for datail in Request.objects.all():
-                if datail.id_software == None:
-                    datails.append({'number' : datail.id, 'software' : '---', 'user' : f'{datail.id_user.surname} {datail.id_user.name} {datail.id_user.middlename}', 'status' : datail.status})
-                else:
-                    datails.append({'number' : datail.id, 'software' : datail.id_software.name, 'user' : f'{datail.id_user.surname} {datail.id_user.name} {datail.id_user.middlename}', 'status' : datail.status})
+                datails.append({'number' : datail.id, 'software' : datail.id_software.name, 'user' : f'{datail.id_user.surname} {datail.id_user.name} {datail.id_user.middlename}', 'status' : datail.status})
             return Response(datails)
         else:
             serializer = RequestSerializer()

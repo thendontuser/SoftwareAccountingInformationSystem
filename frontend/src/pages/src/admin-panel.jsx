@@ -530,22 +530,11 @@ const AdminPanel = () => {
           case 'requests':
             return (
               <>
-                <div className="form-group">
-                  <label>ID ПО:</label>
-                  <input type="number" name="id_software" value={currentItem.id_software || ''} onChange={handleInputChange} />
-                </div>
-                <div className="form-group">
-                  <label>ID пользователя:</label>
-                  <input type="number" name="id_user" value={currentItem.id_user || ''} onChange={handleInputChange} />
-                </div>
-                <div className="form-group">
                   <label>Статус:</label>
                   <select name="status" value={currentItem.status || ''} onChange={handleInputChange}>
-                    <option value="pending">Ожидает</option>
                     <option value="approved">Одобрено</option>
                     <option value="rejected">Отклонено</option>
                   </select>
-                </div>
               </>
             );
           default:
