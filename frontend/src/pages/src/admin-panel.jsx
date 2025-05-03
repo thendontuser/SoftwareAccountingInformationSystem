@@ -15,6 +15,9 @@ const AdminPanel = () => {
     const [requests, setRequests] = useState([]);
     const [departments, setDepartments] = useState([]);
 
+    const [selectedSoftwareDeviceId, setSelectedSoftwareDeviceId] = useState(0);
+    const [selectedSoftwareDeviceName, setSelectedSoftwareDeviceName] = useState('');
+
     // получение данных пользователя
     useEffect(() => {
       const storedUserData = localStorage.getItem("user_info");
@@ -99,34 +102,65 @@ const AdminPanel = () => {
           }
       }; 
       getDepartments();
-  }, [])
+    }, []);
 
     const handleEdit = (item) => {
       setEditMode(true);
       setCurrentItem(item);
     };
 
-    const handleDelete = (id, collection) => {
+    const handleDelete = async (id, collection) => {
       if (window.confirm('Вы уверены, что хотите удалить эту запись?')) {
-        // В реальном приложении здесь будет запрос к API
         switch(collection) {
           case 'software':
-            setSoftwares(softwares.filter(item => item.id !== id));
+            try {
+              await axios.delete(`http://127.0.0.1:8000/softwares/${id}/delete/`);
+              const response = await axios.get('http://127.0.0.1:8000/software/', {params: {'is_all' : true}});
+              setSoftwares(response.data);
+            } catch (error) {
+              console.error('Ошибка удаления:', error);
+              alert('Не удалось удалить ПО');
+            }
             break;
           case 'developers':
-            setDevelopers(developers.filter(item => item.id !== id));
+            try {
+              await axios.delete(`http://127.0.0.1:8000/developers/${id}/delete/`);
+              const response = await axios.get('http://127.0.0.1:8000/developers/');
+              setDevelopers(response.data);
+            } catch (error) {
+              console.error('Ошибка удаления:', error);
+              alert('Не удалось удалить разработчика');
+            }
             break;
           case 'devices':
-            setDevices(devices.filter(item => item.id !== id));
+            try {
+              await axios.delete(`http://127.0.0.1:8000/devices/${id}/delete/`);
+              const response = await axios.get('http://127.0.0.1:8000/devices/');
+              setDevices(response.data);
+            } catch (error) {
+              console.error('Ошибка удаления:', error);
+              alert('Не удалось удалить устройство');
+            }
             break;
           case 'departments':
-            setDepartments(departments.filter(item => item.number !== id));
+            try {
+              await axios.delete(`http://127.0.0.1:8000/departments/${id}/delete/`);
+              const response = await axios.get('http://127.0.0.1:8000/departments/');
+              setDepartments(response.data);
+            } catch (error) {
+              console.error('Ошибка удаления:', error);
+              alert('Не удалось удалить отдел');
+            }
             break;
           case 'users':
-            setUsers(users.filter(item => item.id !== id));
-            break;
-          case 'requests':
-            setRequests(requests.filter(item => item.id !== id));
+            try {
+              await axios.delete(`http://127.0.0.1:8000/users/${id}/delete/`);
+              const response = await axios.get('http://127.0.0.1:8000/users/');
+              setUsers(response.data);
+            } catch (error) {
+              console.error('Ошибка удаления:', error);
+              alert('Не удалось удалить пользователя');
+            }
             break;
           default:
             break;
@@ -151,6 +185,16 @@ const AdminPanel = () => {
       setCurrentItem(prev => ({ ...prev, [name]: value }));
     };
 
+    const handleSoftwareDevice = (value) => {
+      setSelectedSoftwareDeviceName(value);
+
+      devices.forEach(device => {
+        if (device.name === value) {
+            setSelectedSoftwareDeviceId(device.number);
+        }
+      });
+    }
+
     const renderTable = () => {
       const getTitle = () => {
         switch(activeTab) {
@@ -174,7 +218,6 @@ const AdminPanel = () => {
                   <table>
                     <thead>
                       <tr>
-                        <th>ID</th>
                         <th>Название</th>
                         <th>Версия</th>
                         <th>Лицензия</th>
@@ -189,7 +232,6 @@ const AdminPanel = () => {
                     <tbody>
                       {softwares?.map(item => (
                         <tr key={item.id}>
-                          <td>{item.id}</td>
                           <td>{item.name}</td>
                           <td>{item.version}</td>
                           <td>{item.license}</td>
@@ -217,7 +259,6 @@ const AdminPanel = () => {
                   <table>
                     <thead>
                       <tr>
-                        <th>ID</th>
                         <th>Название</th>
                         <th>Тип компании</th>
                         <th>Местоположение</th>
@@ -227,7 +268,6 @@ const AdminPanel = () => {
                     <tbody>
                       {developers?.map(item => (
                         <tr key={item.id}>
-                          <td>{item.id}</td>
                           <td>{item.name}</td>
                           <td>{item.type_of_company}</td>
                           <td>{item.location}</td>
@@ -250,25 +290,27 @@ const AdminPanel = () => {
                   <table>
                     <thead>
                       <tr>
-                        <th>ID</th>
+                        <th>Номер</th>
                         <th>Название</th>
                         <th>ОС</th>
                         <th>IP-адрес</th>
                         <th>ОЗУ (ГБ)</th>
+                        <th>Отдел</th>
                         <th>Действия</th>
                       </tr>
                     </thead>
                     <tbody>
                       {devices?.map(item => (
-                        <tr key={item.id}>
+                        <tr key={item.number}>
                           <td>{item.number}</td>
                           <td>{item.name}</td>
                           <td>{item.os_name}</td>
                           <td>{item.ip_address}</td>
                           <td>{item.ram_value}</td>
+                          <td>{item.department.name}</td>
                           <td className="action-buttons">
                             <button onClick={() => handleEdit(item)}>Редактировать</button>
-                            <button onClick={() => handleDelete(item.id, 'devices')}>Удалить</button>
+                            <button onClick={() => handleDelete(item.number, 'devices')}>Удалить</button>
                           </td>
                         </tr>
                       ))}
@@ -313,7 +355,6 @@ const AdminPanel = () => {
                   <table>
                     <thead>
                       <tr>
-                        <th>ID</th>
                         <th>Фамилия</th>
                         <th>Имя</th>
                         <th>Отчество</th>
@@ -327,7 +368,6 @@ const AdminPanel = () => {
                     <tbody>
                       {users?.map(item => (
                         <tr key={item.id}>
-                          <td>{item.id}</td>
                           <td>{item.surname}</td>
                           <td>{item.name}</td>
                           <td>{item.middlename}</td>
@@ -369,7 +409,6 @@ const AdminPanel = () => {
                           <td>{item.status}</td>
                           <td className="action-buttons">
                             <button onClick={() => handleEdit(item)}>Редактировать</button>
-                            <button onClick={() => handleDelete(item.id, 'requests')}>Удалить</button>
                           </td>
                         </tr>
                       ))}
@@ -412,21 +451,21 @@ const AdminPanel = () => {
                 </div>
                 <div className="form-group">
                   <label>Начало лицензии:</label>
-                  <input type="date" name="begin_license" value={currentItem.begin_license || ''} onChange={handleInputChange} />
+                  <input type="date" name="begin_license" value={currentItem.license_begin || ''} onChange={handleInputChange} />
                 </div>
                 <div className="form-group">
                   <label>Конец лицензии:</label>
-                  <input type="date" name="end_license" value={currentItem.end_license || ''} onChange={handleInputChange} />
+                  <input type="date" name="end_license" value={currentItem.license_end || ''} onChange={handleInputChange} />
                 </div>
                 <div className="form-group">
                   <label>Устройство:</label>
                   <select 
                     id="device"
-                    value={''}
-                    onChange={(e) => handleInputChange(e.target.value)}
+                    value={selectedSoftwareDeviceName}
+                    onChange={(e) => {handleSoftwareDevice(e.target.value)}}
                     required>
                         {devices.map(device => (
-                        <option value={device['number']}> {device['name']} </option>))}
+                        <option value={device['name']}> {device['name']} </option>))}
                   </select>
                 </div>
                 <div className="form-group">

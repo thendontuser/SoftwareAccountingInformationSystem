@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.views import APIView
+from rest_framework.generics import DestroyAPIView
 from software_accounting.models import *
 from rest_framework.response import Response
 from software_accounting.core.serialize import *
@@ -42,9 +43,14 @@ class SoftwareAPIView(APIView):
     def post(self, request) -> Response | None:
         serializer = SoftwareSerializer(data=request.data)
         instance = None
+
         if serializer.is_valid(raise_exception=True):
             instance = serializer.save()
             return Response({'id' : instance.id})
+        
+class SoftwareDestroyAPIView(DestroyAPIView):
+    queryset = Software.objects.all()
+    serializer_class = SoftwareSerializer
         
 
 class DeveloperAPIView(APIView):
@@ -58,10 +64,16 @@ class DeveloperAPIView(APIView):
             serializer.save()
             return Response(serializer.data)
         
+class DeveloperDestroyAPIView(DestroyAPIView):
+    queryset = Developer.objects.all()
+    serializer_class = DeveloperSerializer
+        
 
 class DeviceAPIView(APIView):
     def get(self, request) -> Response:
-        datail = [ {'number' : datail.id, 'name' : datail.name, 'os_name' : datail.os_name, 'ip_address' : datail.ip_address, 'ram_value' : datail.ram_value} for datail in Device.objects.all() ]
+        datail = [ {'number' : datail.id, 'name' : datail.name, 'os_name' : datail.os_name, 'ip_address' : datail.ip_address, 'ram_value' : datail.ram_value, 
+                     'department' : {'number' : datail.number_of_department.number, 'name' : datail.number_of_department.name}} 
+                     for datail in Device.objects.all() ]
         return Response(datail)
     
     def post(self, request) -> Response | None:
@@ -69,6 +81,10 @@ class DeviceAPIView(APIView):
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return Response(serializer.data)
+        
+class DeviceDestroyAPIView(DestroyAPIView):
+    queryset = Device.objects.all()
+    serializer_class = DeviceSerializer
         
 
 class DepartmentAPIView(APIView):
@@ -81,6 +97,10 @@ class DepartmentAPIView(APIView):
         #if serializer.is_valid(raise_exception=True):
         #serializer.save()
         return Response(serializer.get_name(request.data))
+    
+class DepartmentDestroyAPIView(DestroyAPIView):
+    queryset = Department.objects.all()
+    serializer_class = DepartmentSerializer
         
 
 class UserRegistrationAPIView(APIView):
@@ -109,6 +129,10 @@ class UserLoginAPIView(APIView):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             return Response(serializer.user_is_exists(request.data))
+        
+class UserDestroyAPIView(DestroyAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
             
         
 class RequestAPIView(APIView):

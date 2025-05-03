@@ -29,5 +29,10 @@ urlpatterns = [
     path('request/', RequestAPIView.as_view(), name='request'),
     path('users/', UserRegistrationAPIView.as_view(), name='users'),
     path('check_request/', CheckRequestAPIView.as_view(), name='check_request'),
-    path('report/', ReportAPIView.as_view(), name='report')
+    path('report/', ReportAPIView.as_view(), name='report'),
+    path('softwares/<int:pk>/delete/', SoftwareDestroyAPIView.as_view(), name='software-delete'),
+    path('developers/<int:pk>/delete/', DeveloperDestroyAPIView.as_view(), name='developer-delete'),
+    path('devices/<int:pk>/delete/', DeviceDestroyAPIView.as_view(), name='device-delete'),
+    path('departments/<int:pk>/delete/', DepartmentDestroyAPIView.as_view(), name='department-delete'),
+    path('users/<int:pk>/delete/', UserDestroyAPIView.as_view(), name='user-delete')
 ]
