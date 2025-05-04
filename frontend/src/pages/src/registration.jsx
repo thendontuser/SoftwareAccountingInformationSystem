@@ -19,7 +19,7 @@ const RegPage = () => {
 
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             const data = {
@@ -32,28 +32,28 @@ const RegPage = () => {
                 "login": login,
                 "password_hash": password
             }
-            axios.post('http://127.0.0.1:8000/reg/', data).then(response => {
-                if (response.data === 'userIsExists') {
-                    setLoginError('Логин занят');
+
+            const response = await axios.post('http://127.0.0.1:8000/reg/', data);
+            if (response.data === 'userIsExists') {
+                setLoginError('Логин занят');
+            } else {
+                setLoginError('');
+
+                const department = await axios.get('http://127.0.0.1:8000/departments/', {params : {'is_all' : false, 'number' : selectedDepartment}});
+                localStorage.setItem("user_info", JSON.stringify({
+                    'id' : response.id,
+                    'surname' : lastname,
+                    'name' : name,
+                    'middlename' : middlename,
+                    'email' : email,
+                    'department' : department.data?.name
+                }));
+                if (role === 'user') {
+                    navigate('/userPage');
                 } else {
-                    setLoginError('');
-                    axios.post('http://127.0.0.1:8000/departments/', {"number" : selectedDepartment, 'name' : 'none'}).then(response_department => {
-                        localStorage.setItem("user_info", JSON.stringify({
-                            'id' : response.id,
-                            'surname' : lastname,
-                            'name' : name,
-                            'middlename' : middlename,
-                            'email' : email,
-                            'department' : response_department.data
-                        }));
-                        if (role === 'user') {
-                            navigate('/userPage');
-                        } else {
-                            navigate('/adminPage');
-                        }
-                    });
+                    navigate('/adminPage');
                 }
-            });
+            }
         } catch(error) {
             console.error('Ошибка при регистрации:', error.response.data);
         }
@@ -62,7 +62,7 @@ const RegPage = () => {
     useEffect(() => {
         const getDepartments = async () => {
             try {
-                const response = await axios.get('http://127.0.0.1:8000/departments/');
+                const response = await axios.get('http://127.0.0.1:8000/departments/', {params: {'is_all' : true}});
                 setDepartments(response.data);
                 setSelectedDepartment(response.data[0].number);
             } catch (error) {

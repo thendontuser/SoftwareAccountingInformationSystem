@@ -11,7 +11,7 @@ const LoginPage = () => {
 
     let userData = {};
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             const data = {
@@ -24,41 +24,35 @@ const LoginPage = () => {
                 "login" : login,
                 "password_hash" : password
             }
-            axios.post('http://127.0.0.1:8000/login/', data).then(response => {
-                if (response.data === false) {
-                    setErrorMessage('Неверный логин или пароль');
+            const response = await axios.post('http://127.0.0.1:8000/login/', data);
+            if (response.data === false) {
+                setErrorMessage('Неверный логин или пароль');
+            } else {
+                setErrorMessage('');
+                
+                const department = await axios.get('http://127.0.0.1:8000/departments/', {params : {'is_all' : false, 'number' : response.data["department_number"]}});
+                if (department.data === 'None') {
+                    console.log('Ошибка в поиске отдела');
+                    return;
                 } else {
-                    setErrorMessage('');
+                    userData = {
+                        'id' : response.data['id'],
+                        'surname' : response.data['surname'],
+                        'name' : response.data['name'],
+                        'middlename' : response.data['middlename'],
+                        'email' : response.data['email'],
+                        'department' : department.data?.name
+                    };
 
-                    const dep_data = {
-                        "number" : response.data["department_number"],
-                        "name" : 'none'
-                    }                    
-                    axios.post('http://127.0.0.1:8000/departments/', dep_data).then(response_department => {
-                        if (response_department.data === 'None') {
-                            console.log('Ошибка в поиске отдела');
-                            return;
-                        } else {
-                            userData = {
-                                'id' : response.data['id'],
-                                'surname' : response.data['surname'],
-                                'name' : response.data['name'],
-                                'middlename' : response.data['middlename'],
-                                'email' : response.data['email'],
-                                'department' : response_department.data
-                            };
+                    localStorage.setItem("user_info", JSON.stringify(userData));
 
-                            localStorage.setItem("user_info", JSON.stringify(userData));
-
-                            if (response.data['role_name'] === 'user') {
-                                navigate('userPage/');
-                            } else {
-                                navigate('adminPage/');
-                            }
-                        }
-                    });
+                    if (response.data['role_name'] === 'user') {
+                        navigate('userPage/');
+                    } else {
+                        navigate('adminPage/');
+                    }
                 }
-            });
+            }
         } catch(error) {
             console.log(error.response.data);
         }

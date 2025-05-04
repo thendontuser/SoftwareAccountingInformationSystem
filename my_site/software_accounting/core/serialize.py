@@ -65,20 +65,13 @@ class DeveloperSerializer(serializers.ModelSerializer):
 class DeviceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Device
-        fields = ['id', 'name', 'os_name', 'ip_address', 'ram_value']
+        fields = ['id', 'name', 'os_name', 'ip_address', 'ram_value', 'number_of_department']
 
 
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Department
         fields = ['number', 'name']
-
-    def get_name(self, data) -> str:
-        try:
-            department = Department.objects.get(number=data['number'])
-            return department.name
-        except Department.DoesNotExist:
-            return 'None'
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -115,6 +108,11 @@ class UserSerializer(serializers.ModelSerializer):
         except User.DoesNotExist:
             return False
         return False
+    
+class UserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['surname', 'name', 'middlename', 'email', 'role_name', 'department_number', 'login']
 
 
 class RequestSerializer(serializers.ModelSerializer):
@@ -143,6 +141,10 @@ class RequestSerializer(serializers.ModelSerializer):
             return {'state' : False, 'message' : 'На устройство ' + device['name'] + ' нельзя установить ' + software['name'] + ', так как не хватает оперативной памяти\nРекомендуемое значение: 8 Гб\nИмеющееся: ' + str(device['ram_value'])}
         return {'state' : True, 'message' : 'Ваша заявка прошла проверку и программное обеспечение ' + software['name'] + ' можно установить на устройство ' + device['name']}
     
+class RequestUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Request
+        fields = ['id', 'status']
 
 def get_report(softwares : list[Software], department : str) -> FileResponse:
     # Формирование записей в нужном формате

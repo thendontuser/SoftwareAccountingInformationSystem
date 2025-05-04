@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.views import APIView
-from rest_framework.generics import DestroyAPIView
+from rest_framework.generics import DestroyAPIView, UpdateAPIView
 from software_accounting.models import *
 from rest_framework.response import Response
 from software_accounting.core.serialize import *
@@ -48,6 +48,11 @@ class SoftwareAPIView(APIView):
             instance = serializer.save()
             return Response({'id' : instance.id})
         
+class SoftwareUpdateView(UpdateAPIView):
+    queryset = Software.objects.all()
+    serializer_class = SoftwareSerializer
+    lookup_field = 'pk'
+        
 class SoftwareDestroyAPIView(DestroyAPIView):
     queryset = Software.objects.all()
     serializer_class = SoftwareSerializer
@@ -63,6 +68,11 @@ class DeveloperAPIView(APIView):
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return Response(serializer.data)
+        
+class DeveloperUpdateView(UpdateAPIView):
+    queryset = Developer.objects.all()
+    serializer_class = DeveloperSerializer
+    lookup_field = 'pk'
         
 class DeveloperDestroyAPIView(DestroyAPIView):
     queryset = Developer.objects.all()
@@ -82,6 +92,11 @@ class DeviceAPIView(APIView):
             serializer.save()
             return Response(serializer.data)
         
+class DeviceUpdateView(UpdateAPIView):
+    queryset = Device.objects.all()
+    serializer_class = DeviceSerializer
+    lookup_field = 'pk'
+        
 class DeviceDestroyAPIView(DestroyAPIView):
     queryset = Device.objects.all()
     serializer_class = DeviceSerializer
@@ -89,25 +104,35 @@ class DeviceDestroyAPIView(DestroyAPIView):
 
 class DepartmentAPIView(APIView):
     def get(self, request) -> Response:
-        datail = [ {'number' : datail.number, 'name' : datail.name} for datail in Department.objects.all() ]
+        if request.GET.get('is_all') == 'true':
+            datail = [ {'number' : datail.number, 'name' : datail.name} for datail in Department.objects.all() ]
+        else:
+            department = Department.objects.get(number=request.GET.get('number'))
+            datail = {'number' : department.number, 'name' : department.name}
         return Response(datail)
     
     def post(self, request) -> Response | None:
         serializer = DepartmentSerializer(data=request.data)
-        #if serializer.is_valid(raise_exception=True):
-        #serializer.save()
-        return Response(serializer.get_name(request.data))
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+        return Response(serializer.data)
+    
+class DepartmentUpdateView(UpdateAPIView):
+    queryset = Department.objects.all()
+    serializer_class = DepartmentSerializer
+    lookup_field = 'number'
     
 class DepartmentDestroyAPIView(DestroyAPIView):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
+    lookup_field = 'number'
         
 
 class UserRegistrationAPIView(APIView):
     def get(self, request) -> Response:
         datail = [ {'id' : datail.id, 'surname' : datail.surname, 'name' : datail.name, 'middlename' : datail.middlename, 'role_name' : datail.role_name, 
-                    'email' : datail.email, 'department' : datail.department_number.name,  'login' : datail.login,
-                      'password_hash' : datail.password_hash} for datail in User.objects.all() ]
+                    'email' : datail.email, 'department' : {'number' : datail.department_number.number, 'name' : datail.department_number.name},  
+                    'login' : datail.login, 'password_hash' : datail.password_hash} for datail in User.objects.all() ]
         return Response(datail)
     
     def post(self, request) -> Response | None:
@@ -130,6 +155,11 @@ class UserLoginAPIView(APIView):
         if serializer.is_valid(raise_exception=True):
             return Response(serializer.user_is_exists(request.data))
         
+class UserUpdateView(UpdateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserUpdateSerializer
+    lookup_field = 'pk'
+        
 class UserDestroyAPIView(DestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -151,6 +181,11 @@ class RequestAPIView(APIView):
         if serializer.is_valid(raise_exception=True):
             serializer.save()
         return Response(serializer.data)
+    
+class RequestUpdateView(UpdateAPIView):
+    queryset = Request.objects.all()
+    serializer_class = RequestUpdateSerializer
+    lookup_field = 'pk'
     
 
 class ReportAPIView(APIView):

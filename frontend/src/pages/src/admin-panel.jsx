@@ -18,6 +18,15 @@ const AdminPanel = () => {
     const [selectedSoftwareDeviceId, setSelectedSoftwareDeviceId] = useState(0);
     const [selectedSoftwareDeviceName, setSelectedSoftwareDeviceName] = useState('');
 
+    const [selectedSoftwareDeveloperId, setSelectedSoftwareDeveloperId] = useState(0);
+    const [selectedSoftwareDeveloperName, setSelectedSoftwareDeveloperName] = useState('');
+
+    const [selectedDepartmentNumber, setSelectedDepartmentNumber] = useState(0);
+    const [selectedDepartmentName, setSelectedDepartmentName] = useState('');
+
+    const [isEdit, setIsEdit] = useState(false);
+    const [editCollection, setEditCollection] = useState('');
+
     // получение данных пользователя
     useEffect(() => {
       const storedUserData = localStorage.getItem("user_info");
@@ -95,7 +104,7 @@ const AdminPanel = () => {
     useEffect(() => {
       const getDepartments = async () => {
           try {
-              const response = await axios.get('http://127.0.0.1:8000/departments/');
+              const response = await axios.get('http://127.0.0.1:8000/departments/', {params : {'is_all' : true}});
               setDepartments(response.data);
           } catch (error) {
             alert("Ошибка при получении данных об отделах" + error);
@@ -104,7 +113,9 @@ const AdminPanel = () => {
       getDepartments();
     }, []);
 
-    const handleEdit = (item) => {
+    const handleEdit = (item, collection) => {
+      setIsEdit(true);
+      setEditCollection(collection);
       setEditMode(true);
       setCurrentItem(item);
     };
@@ -145,7 +156,7 @@ const AdminPanel = () => {
           case 'departments':
             try {
               await axios.delete(`http://127.0.0.1:8000/departments/${id}/delete/`);
-              const response = await axios.get('http://127.0.0.1:8000/departments/');
+              const response = await axios.get('http://127.0.0.1:8000/departments/', {params: {'is_all' : true}});
               setDepartments(response.data);
             } catch (error) {
               console.error('Ошибка удаления:', error);
@@ -168,14 +179,203 @@ const AdminPanel = () => {
       }
     };
 
-    const handleSave = (e) => {
+    const handleSave = async (e) => {
       e.preventDefault();
-      // В реальном приложении здесь будет запрос к API
+
+      if (isEdit) {
+        switch (editCollection) {
+          case 'softwares':
+            if (!currentItem.license_begin || !currentItem.license_end) {
+              alert('Укажите даты начала и окончания лицензии');
+              return;
+            }
+            const licenseBegin = new Date(currentItem.license_begin).toISOString().split('T')[0];
+            const licenseEnd = new Date(currentItem.license_end).toISOString().split('T')[0];
+            try {
+              await axios.put(`http://127.0.0.1:8000/softwares/${currentItem.id}/update/`, {
+                'name' : currentItem.name,
+                'version' : currentItem.version,
+                'license' : currentItem.license,
+                'license_begin' : licenseBegin,
+                'license_end' : licenseEnd,
+                'id_developer' : currentItem.developer.id,
+                'id_device' : currentItem.device.id,
+                'logo_path' : currentItem.logo_path
+              });
+              const response = await axios.get('http://127.0.0.1:8000/software/', {params: {'is_all' : true}});
+              setSoftwares(response.data);
+            }
+            catch (error) {
+              console.log(error);
+              alert('Не удалось отредактировать ПО');
+            }
+            break;
+          case 'developers':
+            try {
+              await axios.put(`http://127.0.0.1:8000/developers/${currentItem.id}/update/`, {
+                'name' : currentItem.name,
+                'type_of_company' : currentItem.type_of_company,
+                'location' : currentItem.location
+              });
+              const response = await axios.get('http://127.0.0.1:8000/developers/');
+              setDevelopers(response.data);
+            }
+            catch (error) {
+              console.log(error);
+              alert('Не удалось отредактировать разработчика');
+            }
+            break;
+          case 'devices':
+            try {
+              await axios.put(`http://127.0.0.1:8000/devices/${currentItem.number}/update/`, {
+                'name' : currentItem.name,
+                'os_name' : currentItem.os_name,
+                'ip_address' : currentItem.ip_address,
+                'ram_value' : currentItem.ram_value,
+                'number_of_department' : selectedDepartmentNumber
+              });
+              const response = await axios.get('http://127.0.0.1:8000/devices/');
+              setDevices(response.data);
+            }
+            catch (error) {
+              console.log(error);
+              alert('Не удалось отредактировать устройтсво');
+            }
+            break;
+          case 'departments':
+            try {
+              await axios.put(`http://127.0.0.1:8000/departments/${currentItem.number}/update/`, {
+                'number' : currentItem.number,
+                'name' : currentItem.name
+              });
+              const response = await axios.get('http://127.0.0.1:8000/departments/', {params: {'is_all' : true}});
+              setDepartments(response.data);
+            }
+            catch (error) {
+              console.log(error);
+              alert('Не удалось отредактировать отдел');
+            }
+            break;
+          case 'users':
+            try {
+              await axios.put(`http://127.0.0.1:8000/users/${currentItem.id}/update/`, {
+                'surname' : currentItem.surname,
+                'name' : currentItem.name,
+                'middlename' : currentItem.middlename,
+                'role_name' : currentItem.role_name,
+                'email' : currentItem.email,
+                'department_number' : selectedDepartmentNumber,
+                'login' : currentItem.login
+              });
+              const response = await axios.get('http://127.0.0.1:8000/users/');
+              setUsers(response.data);
+            }
+            catch (error) {
+              console.log(error);
+              alert('Не удалось отредактировать пользователя');
+            }
+            break;
+          case 'requests':
+            try {
+              await axios.put(`http://127.0.0.1:8000/requests/${currentItem.number}/update/`, {
+                'status' : currentItem.status
+              });
+              const response = await axios.get('http://127.0.0.1:8000/request/', {params : {'is_all_users' : true}});
+              setRequests(response.data);
+            }
+            catch (error) {
+              console.log(error);
+              alert('Не удалось отредактировать заявку');
+            }
+            break;
+          default:
+            break;
+        }
+      } else {
+        switch (editCollection) {
+          case 'softwares':
+            if (!currentItem.license_begin || !currentItem.license_end) {
+              alert('Укажите даты начала и окончания лицензии');
+              return;
+            }
+            const licenseBegin = new Date(currentItem.license_begin).toISOString().split('T')[0];
+            const licenseEnd = new Date(currentItem.license_end).toISOString().split('T')[0];
+            try {
+              await axios.post('http://127.0.0.1:8000/software/', {
+                'name' : currentItem.name,
+                'version' : currentItem.version,
+                'license' : currentItem.license,
+                'license_begin' : licenseBegin,
+                'license_end' : licenseEnd,
+                'id_developer' : selectedSoftwareDeveloperId,
+                'id_device' : selectedSoftwareDeviceId,
+                'logo_path' : currentItem.logo_path
+              });
+              const response = await axios.get('http://127.0.0.1:8000/software/', {params: {'is_all' : true}});
+              setSoftwares(response.data);
+            }
+            catch (error) {
+              console.log(error);
+              alert('Не удалось добавить ПО');
+            }
+            break;
+          case 'developers':
+            try {
+              await axios.post('http://127.0.0.1:8000/developers/', {
+                'name' : currentItem.name,
+                'type_of_company' : currentItem.type_of_company,
+                'location' : currentItem.location
+              });
+              const response = await axios.get('http://127.0.0.1:8000/developers/');
+              setDevelopers(response.data);
+            }
+            catch (error) {
+              console.log(error);
+              alert('Не удалось добавить разработчика');
+            }
+            break;
+          case 'devices':
+            try {
+              await axios.post('http://127.0.0.1:8000/devices/', {
+                'name' : currentItem.name,
+                'os_name' : currentItem.os_name,
+                'ip_address' : currentItem.ip_address,
+                'ram_value' : currentItem.ram_value,
+                'number_of_department' : selectedDepartmentNumber
+              });
+              const response = await axios.get('http://127.0.0.1:8000/devices/');
+              setDevices(response.data);
+            }
+            catch (error) {
+              console.log(error);
+              alert('Не удалось добавить устройтсво');
+            }
+            break;
+          case 'departments':
+            try {
+              await axios.post('http://127.0.0.1:8000/departments/', {
+                'number' : currentItem.number,
+                'name' : currentItem.name
+              });
+              const response = await axios.get('http://127.0.0.1:8000/departments/', {params: {'is_all' : true}});
+              setDepartments(response.data);
+            }
+            catch (error) {
+              console.log(error);
+              alert('Не удалось добавить отдел');
+            }
+            break;
+          default:
+            break;
+        }
+      }
       setEditMode(false);
       setCurrentItem(null);
     };
 
-    const handleAdd = () => {
+    const handleAdd = (collection) => {
+      setIsEdit(false);
+      setEditCollection(collection);
       setEditMode(true);
       setCurrentItem({});
     };
@@ -193,7 +393,27 @@ const AdminPanel = () => {
             setSelectedSoftwareDeviceId(device.number);
         }
       });
-    }
+    };
+
+    const handleSoftwareDeveloper = (value) => {
+      setSelectedSoftwareDeveloperName(value);
+
+      developers.forEach(developer => {
+        if (developer.name === value) {
+          setSelectedSoftwareDeveloperId(developer.id);
+        }
+      });
+    };
+
+    const handleDepartment = (value) => {
+      setSelectedDepartmentName(value);
+
+      departments.forEach(department => {
+        if (department.name === value) {
+          setSelectedDepartmentNumber(department.number);
+        }
+      });
+    };
 
     const renderTable = () => {
       const getTitle = () => {
@@ -213,7 +433,7 @@ const AdminPanel = () => {
           case 'software':
             return (
               <div className="table-container">
-                <button className="add-button" onClick={handleAdd}>Добавить ПО</button>
+                <button className="add-button" onClick={() => handleAdd('softwares')}>Добавить ПО</button>
                 <div className="table-scroll-wrapper">
                   <table>
                     <thead>
@@ -241,7 +461,7 @@ const AdminPanel = () => {
                           <td>{item.developer?.name}</td>
                           <td><img src={item.logo_path} alt="Логотип" className="logo-preview" /></td>
                           <td className="action-buttons">
-                            <button onClick={() => handleEdit(item)}>Редактировать</button>
+                            <button onClick={() => handleEdit(item, 'softwares')}>Редактировать</button>
                             <button onClick={() => handleDelete(item.id, 'software')}>Удалить</button>
                           </td>
                         </tr>
@@ -254,7 +474,7 @@ const AdminPanel = () => {
           case 'developers':
             return (
               <div className="table-container">
-                <button className="add-button" onClick={handleAdd}>Добавить разработчика</button>
+                <button className="add-button" onClick={() => handleAdd('developers')}>Добавить разработчика</button>
                 <div className="table-scroll-wrapper">
                   <table>
                     <thead>
@@ -272,7 +492,7 @@ const AdminPanel = () => {
                           <td>{item.type_of_company}</td>
                           <td>{item.location}</td>
                           <td className="action-buttons">
-                            <button onClick={() => handleEdit(item)}>Редактировать</button>
+                            <button onClick={() => handleEdit(item, 'developers')}>Редактировать</button>
                             <button onClick={() => handleDelete(item.id, 'developers')}>Удалить</button>
                           </td>
                         </tr>
@@ -285,7 +505,7 @@ const AdminPanel = () => {
           case 'devices':
             return (
               <div className="table-container">
-                <button className="add-button" onClick={handleAdd}>Добавить устройство</button>
+                <button className="add-button" onClick={() => handleAdd('devices')}>Добавить устройство</button>
                 <div className="table-scroll-wrapper">
                   <table>
                     <thead>
@@ -309,7 +529,7 @@ const AdminPanel = () => {
                           <td>{item.ram_value}</td>
                           <td>{item.department.name}</td>
                           <td className="action-buttons">
-                            <button onClick={() => handleEdit(item)}>Редактировать</button>
+                            <button onClick={() => handleEdit(item, 'devices')}>Редактировать</button>
                             <button onClick={() => handleDelete(item.number, 'devices')}>Удалить</button>
                           </td>
                         </tr>
@@ -322,7 +542,7 @@ const AdminPanel = () => {
           case 'departments':
             return (
               <div className="table-container">
-                <button className="add-button" onClick={handleAdd}>Добавить отдел</button>
+                <button className="add-button" onClick={() => handleAdd('departments')}>Добавить отдел</button>
                 <div className="table-scroll-wrapper">
                   <table>
                     <thead>
@@ -338,8 +558,8 @@ const AdminPanel = () => {
                           <td>{item.number}</td>
                           <td>{item.name}</td>
                           <td className="action-buttons">
-                            <button onClick={() => handleEdit(item)}>Редактировать</button>
-                            <button onClick={() => handleDelete(item.id, 'departments')}>Удалить</button>
+                            <button onClick={() => handleEdit(item, 'departments')}>Редактировать</button>
+                            <button onClick={() => handleDelete(item.number, 'departments')}>Удалить</button>
                           </td>
                         </tr>
                       ))}
@@ -373,10 +593,10 @@ const AdminPanel = () => {
                           <td>{item.middlename}</td>
                           <td>{item.role_name}</td>
                           <td>{item.email}</td>
-                          <td>{item.department}</td>
+                          <td>{item.department.name}</td>
                           <td>{item.login}</td>
                           <td className="action-buttons">
-                            <button onClick={() => handleEdit(item)}>Редактировать</button>
+                            <button onClick={() => handleEdit(item, 'users')}>Редактировать</button>
                             <button onClick={() => handleDelete(item.id, 'users')}>Удалить</button>
                           </td>
                         </tr>
@@ -402,13 +622,13 @@ const AdminPanel = () => {
                     </thead>
                     <tbody>
                       {requests?.map(item => (
-                        <tr key={item.id}>
+                        <tr key={item.number}>
                           <td>{item.number}</td>
                           <td>{item.software}</td>
                           <td>{item.user}</td>
                           <td>{item.status}</td>
                           <td className="action-buttons">
-                            <button onClick={() => handleEdit(item)}>Редактировать</button>
+                            <button onClick={() => handleEdit(item, 'requests')}>Редактировать</button>
                           </td>
                         </tr>
                       ))}
@@ -451,11 +671,11 @@ const AdminPanel = () => {
                 </div>
                 <div className="form-group">
                   <label>Начало лицензии:</label>
-                  <input type="date" name="begin_license" value={currentItem.license_begin || ''} onChange={handleInputChange} />
+                  <input type="date" name="license_begin" value={currentItem.license_begin || ''} onChange={handleInputChange} />
                 </div>
                 <div className="form-group">
                   <label>Конец лицензии:</label>
-                  <input type="date" name="end_license" value={currentItem.license_end || ''} onChange={handleInputChange} />
+                  <input type="date" name="license_end" value={currentItem.license_end || ''} onChange={handleInputChange} />
                 </div>
                 <div className="form-group">
                   <label>Устройство:</label>
@@ -470,7 +690,14 @@ const AdminPanel = () => {
                 </div>
                 <div className="form-group">
                   <label>Разработчик:</label>
-                  <input type="number" name="id_developer" value={currentItem.id_developer || ''} onChange={handleInputChange} />
+                  <select 
+                    id="developer"
+                    value={selectedSoftwareDeveloperName}
+                    onChange={(e) => {handleSoftwareDeveloper(e.target.value)}}
+                    required>
+                        {developers.map(developer => (
+                        <option value={developer['name']}> {developer['name']} </option>))}
+                  </select>
                 </div>
                 <div className="form-group">
                   <label>Путь к логотипу:</label>
@@ -515,8 +742,15 @@ const AdminPanel = () => {
                   <input type="number" name="ram_value" value={currentItem.ram_value || ''} onChange={handleInputChange} />
                 </div>
                 <div className="form-group">
-                  <label>Номер отдела:</label>
-                  <input type="number" name="number_of_department" value={currentItem.number_of_department || ''} onChange={handleInputChange} />
+                  <label>Отдел:</label>
+                  <select 
+                    id="department"
+                    value={selectedDepartmentName}
+                    onChange={(e) => {handleDepartment(e.target.value)}}
+                    required>
+                        {departments.map(department => (
+                        <option value={department['name']}> {department['name']} </option>))}
+                  </select>
                 </div>
               </>
             );
@@ -557,8 +791,15 @@ const AdminPanel = () => {
                   <input type="email" name="email" value={currentItem.email || ''} onChange={handleInputChange} />
                 </div>
                 <div className="form-group">
-                  <label>Номер отдела:</label>
-                  <input type="number" name="department_number" value={currentItem.department_number || ''} onChange={handleInputChange} />
+                  <label>Отдел:</label>
+                  <select 
+                    id="department"
+                    value={selectedDepartmentName}
+                    onChange={(e) => handleDepartment(e.target.value)}
+                    required>
+                        {departments.map(department => (
+                        <option value={department['name']}> {department['name']} </option>))}
+                  </select>
                 </div>
                 <div className="form-group">
                   <label>Логин:</label>
@@ -571,8 +812,8 @@ const AdminPanel = () => {
               <>
                   <label>Статус:</label>
                   <select name="status" value={currentItem.status || ''} onChange={handleInputChange}>
-                    <option value="approved">Одобрено</option>
-                    <option value="rejected">Отклонено</option>
+                    <option value="Одобрено">Одобрено</option>
+                    <option value="Отклонено">Отклонено</option>
                   </select>
               </>
             );
