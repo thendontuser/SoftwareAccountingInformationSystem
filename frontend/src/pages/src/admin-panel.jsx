@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../styles/admin-panel.css';
 
@@ -26,6 +27,11 @@ const AdminPanel = () => {
 
     const [isEdit, setIsEdit] = useState(false);
     const [editCollection, setEditCollection] = useState('');
+
+    const [showReportModal, setShowReportModal] = useState(false);
+    const [selectedReportDepartment, setSelectedReportDepartment] = useState('all');
+
+    const navigate = useNavigate();
 
     // получение данных пользователя
     useEffect(() => {
@@ -112,6 +118,32 @@ const AdminPanel = () => {
       }; 
       getDepartments();
     }, []);
+
+    const logout = () => {
+      if (window.confirm('Вы уверены, что хотите выйти из аккаунта?')) {
+        navigate('/');
+      }
+    };
+
+    const handleGetReport = () => {
+      const getReportPDF = async () => {
+          await axios.get('http://127.0.0.1:8000/report/', {params : {department : selectedReportDepartment}, responseType : 'blob'}).then(response => {
+              try {
+                  const url = window.URL.createObjectURL(new Blob([response.data]));
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = 'Перечень_ПО_' + userData.department + '.pdf';
+                  document.body.appendChild(a);
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                  document.body.removeChild(a);
+              } catch(error) {
+                  console.error('Error downloading PDF:', error);
+              }
+          });
+      };
+      getReportPDF();
+    };
 
     const handleEdit = (item, collection) => {
       setIsEdit(true);
@@ -433,7 +465,49 @@ const AdminPanel = () => {
           case 'software':
             return (
               <div className="table-container">
-                <button className="add-button" onClick={() => handleAdd('softwares')}>Добавить ПО</button>
+                <div style={{ display: 'flex', gap: '10px', marginBottom: '1rem' }}>
+                  <button className="add-button" onClick={() => handleAdd('softwares')}>Добавить ПО</button>
+                  <button className="add-button" onClick={() => setShowReportModal(true)} style={{ backgroundColor: '#781c0e' }}>Сформировать отчет</button>
+                </div>
+
+                {/* Модальное окно */}
+                {showReportModal && (
+                  <div className="modal-overlay">
+                    <div className="edit-form">
+                      <h3>Формирование отчёта</h3>
+                      
+                      <div className="form-group">
+                        <label>Выберите отдел:</label>
+                        <select
+                          value={selectedReportDepartment}
+                          onChange={(e) => setSelectedReportDepartment(e.target.value)}
+                          className="form-select"
+                        >
+                          <option value="all">Все отделы</option>
+                          {departments.map(dept => (
+                            <option key={dept.number} value={dept.name}> {dept.name} </option>
+                          ))}
+                        </select>
+                      </div>
+                      
+                      <div className="form-actions">
+                        <button 
+                          onClick={() => {handleGetReport()}}
+                          className="edit-btn"
+                        >
+                          Сформировать
+                        </button>
+                        <button 
+                          onClick={() => setShowReportModal(false)}
+                          className="delete-btn"
+                        >
+                          Отмена
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="table-scroll-wrapper">
                   <table>
                     <thead>
@@ -844,7 +918,7 @@ const AdminPanel = () => {
           <h1>Учет программного обеспечения</h1>
           <div className="admin-info">
             <span className="admin-name">{userData?.surname} {userData?.name} {userData?.middlename}</span>
-            <button className="logout-button">Выйти</button>
+            <button className="logout-button" onClick={() => logout()}>Выйти</button>
           </div>
         </header>
         

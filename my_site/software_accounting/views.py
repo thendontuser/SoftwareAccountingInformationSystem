@@ -190,10 +190,14 @@ class RequestUpdateView(UpdateAPIView):
 
 class ReportAPIView(APIView):
     def get(self, request):
-        department = request.GET.get('department')
         serializer = SoftwareSerializer()
-        softwares = serializer.get_softwares_by_department(department)
-        return get_report(softwares, department)
+
+        if request.GET.get('department') == 'all':
+            return get_report(Software.objects.all(), 'all')
+        else:
+            department = request.GET.get('department')
+            softwares = serializer.get_softwares_by_department(department)
+            return get_report(softwares, department)
 
     def post(self, request):
         pass

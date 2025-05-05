@@ -51,7 +51,7 @@ class SoftwareSerializer(serializers.ModelSerializer):
         softwares = []
         for request in Request.objects.all():
             if request.id_software != None:
-                if request.id_user.department_number.name == department:
+                if request.id_software.id_device.number_of_department.name == department:
                     softwares.append(Software.objects.get(id=request.id_software.id))
         return softwares
 
@@ -149,8 +149,13 @@ class RequestUpdateSerializer(serializers.ModelSerializer):
 def get_report(softwares : list[Software], department : str) -> FileResponse:
     # Формирование записей в нужном формате
     content = []
-    for software in softwares:
-        content.append({'software' : software.name, 'version' : software.version, 'developer' : software.id_developer.name, 'device' : software.id_device.name})
+
+    if department == 'all':
+        for software in softwares:
+            content.append({'software' : software.name, 'version' : software.version, 'developer' : software.id_developer.name, 'device' : software.id_device.name, 'department' : software.id_device.number_of_department.name})
+    else:
+        for software in softwares:
+            content.append({'software' : software.name, 'version' : software.version, 'developer' : software.id_developer.name, 'device' : software.id_device.name})
 
     # Добавление записей в PDF файл
     pdfmetrics.registerFont(TTFont("TimesNewRoman", os.path.join(settings.BASE_DIR, 'software_accounting', 'fonts', 'tnr.ttf')))
@@ -162,15 +167,29 @@ def get_report(softwares : list[Software], department : str) -> FileResponse:
     pdf.drawString(170, 750, f'Перечень Программного обеспечения отдела {department}')
 
     y, stepY = 700, 20
-    for c in content:
-        pdf.drawString(50, y, f'Программное обеспечение: {c['software']}')
-        y -= stepY
-        pdf.drawString(50, y, f'Версия: {c['version']}')
-        y -= stepY
-        pdf.drawString(50, y, f'Разработчик: {c['developer']}')
-        y -= stepY
-        pdf.drawString(50, y, f'Установлено на устройстве: {c['device']}')
-        y -= (stepY * 2)
+
+    if department == 'all':
+        for c in content:
+            pdf.drawString(50, y, f'Программное обеспечение: {c['software']}')
+            y -= stepY
+            pdf.drawString(50, y, f'Версия: {c['version']}')
+            y -= stepY
+            pdf.drawString(50, y, f'Разработчик: {c['developer']}')
+            y -= stepY
+            pdf.drawString(50, y, f'Установлено на устройстве: {c['device']}')
+            y -= stepY
+            pdf.drawString(50, y, f'Отдел: {c['department']}')
+            y -= (stepY * 2)
+    else:
+        for c in content:
+            pdf.drawString(50, y, f'Программное обеспечение: {c['software']}')
+            y -= stepY
+            pdf.drawString(50, y, f'Версия: {c['version']}')
+            y -= stepY
+            pdf.drawString(50, y, f'Разработчик: {c['developer']}')
+            y -= stepY
+            pdf.drawString(50, y, f'Установлено на устройстве: {c['device']}')
+            y -= (stepY * 2)
 
     pdf.save()
     

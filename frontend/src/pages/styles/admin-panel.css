@@ -200,6 +200,10 @@ button:active {
   display: inline-block;
 }
 
+.add-button + .add-button {
+  margin-left: 10px;
+}
+
 .add-button:hover {
   background-color: #942418;
 }
